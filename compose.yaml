@@ -19,6 +19,7 @@ services:
     environment:
       DB_HOST: db
       DB_NAME: veche
+      APP_DEMO: ${APP_DEMO:-1}
       DB_USER: veche
       DB_PASSWORD: ${DB_PASSWORD:-veche-local}
       TZ: UTC
