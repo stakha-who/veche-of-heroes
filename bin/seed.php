@@ -20,3 +20,12 @@ foreach (['demo' => 'veche-demo', 'guest' => 'veche-guest'] as $name => $passwor
     }
     $userIds[$name] = (int) $userId;
 }
+
+$regionInsert = $database->prepare(
+    'INSERT INTO regions (code, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE code = regions.code'
+);
+foreach (['EUW' => 'Западная Европа', 'EUNE' => 'Северо-Восточная Европа', 'ASIA' => 'Азия',
+          'KR' => 'Корея', 'RU' => 'Россия'] as $code => $name) {
+    $regionInsert->execute([$code, $name]);
+}
+$regionIds = $database->query('SELECT code, id FROM regions')->fetchAll(PDO::FETCH_KEY_PAIR);
