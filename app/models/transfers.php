@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+const TRANSFER_PRICE = 2600;
+
 function regionById(PDO $database, int $id): ?array
 {
     $query = $database->prepare('SELECT id, code, name, is_available FROM regions WHERE id = ?');
@@ -25,6 +27,7 @@ function transferQuote(PDO $database, array $account, int $targetId, DateTimeImm
     $quote = [
         'source' => $source,
         'target' => $target,
+        'price' => TRANSFER_PRICE,
         'error' => null,
     ];
 
@@ -42,6 +45,8 @@ function transferQuote(PDO $database, array $account, int $targetId, DateTimeImm
         } else {
             $quote['error'] = 'Перенос по этому маршруту недоступен.';
         }
+    } elseif ((int) $account['gold'] < TRANSFER_PRICE) {
+        $quote['error'] = 'Недостаточно золотых для переноса.';
     }
 
     return $quote;
