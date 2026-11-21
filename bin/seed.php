@@ -82,3 +82,11 @@ foreach (['EUW', 'EUNE', 'ASIA', 'KR'] as $source) {
         }
     }
 }
+
+$accountTime = $database->prepare('UPDATE accounts SET last_transfer_at = ? WHERE id = ?');
+foreach (['Весна' => '-1 day', 'Любомир' => '-91 days'] as $player => $interval) {
+    if (in_array($player, $newAccounts, true)) {
+        $timestamp = new DateTimeImmutable($interval);
+        $accountTime->execute([$timestamp->format('Y-m-d H:i:s'), $accountIds[$player]]);
+    }
+}

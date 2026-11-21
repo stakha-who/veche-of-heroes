@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 const TRANSFER_PRICE = 2600;
+const TRANSFER_COOLDOWN_HOURS = 2160;
 
 function regionById(PDO $database, int $id): ?array
 {
@@ -28,6 +29,7 @@ function transferQuote(PDO $database, array $account, int $targetId, DateTimeImm
         'source' => $source,
         'target' => $target,
         'price' => TRANSFER_PRICE,
+        'next_at' => nextTransferTime($account['last_transfer_at']),
         'error' => null,
     ];
 
@@ -45,9 +47,20 @@ function transferQuote(PDO $database, array $account, int $targetId, DateTimeImm
         } else {
             $quote['error'] = 'Перенос по этому маршруту недоступен.';
         }
+    } elseif ($quote['next_at'] !== null && $now < $quote['next_at']) {
+        $quote['error'] = 'Ещё не прошло 90 восходов солнца после прошлого переноса.';
     } elseif ((int) $account['gold'] < TRANSFER_PRICE) {
         $quote['error'] = 'Недостаточно золотых для переноса.';
     }
 
     return $quote;
+}
+
+function nextTransferTime(?string $lastTransferAt): ?DateTimeImmutable
+{
+    if ($lastTransferAt === null) {
+        return null;
+    }
+    $last = new DateTimeImmutable($lastTransferAt, new DateTimeZone('UTC'));
+    return $last->add(new DateInterval('PT' . TRANSFER_COOLDOWN_HOURS . 'H'));
 }
