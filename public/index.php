@@ -20,15 +20,17 @@ if ($path === '/health') {
 require __DIR__ . '/../app/view.php';
 require __DIR__ . '/../app/session.php';
 require __DIR__ . '/../app/controllers/auth.php';
+require __DIR__ . '/../app/models/accounts.php';
+require __DIR__ . '/../app/controllers/accounts.php';
 
 startSession();
 
 $routes = [
     'GET /' => static fn () => render('home'),
-    'GET /accounts' => static function (): void {
-        requireLogin();
-        render('message', ['pageTitle' => 'Кабинет', 'message' => 'Вход выполнен.']);
-    },
+    'GET /accounts' => 'accountsPage',
+    'GET /account' => 'accountPage',
+    'GET /account/new' => 'accountCreatePage',
+    'POST /account/new' => 'accountCreateSubmit',
     'GET /login' => 'loginPage',
     'POST /login' => 'loginSubmit',
     'POST /logout' => 'logoutSubmit',
