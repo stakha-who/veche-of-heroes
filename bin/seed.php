@@ -70,3 +70,15 @@ foreach ([
 ] as [$player, $item, $quantity]) {
     $itemInsert->execute([$accountIds[$player], $item, $quantity]);
 }
+
+$routeInsert = $database->prepare(
+    'INSERT INTO transfer_routes (source_region_id, target_region_id) VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE source_region_id = transfer_routes.source_region_id'
+);
+foreach (['EUW', 'EUNE', 'ASIA', 'KR'] as $source) {
+    foreach (['EUW', 'EUNE', 'ASIA'] as $target) {
+        if ($source !== $target) {
+            $routeInsert->execute([$regionIds[$source], $regionIds[$target]]);
+        }
+    }
+}
