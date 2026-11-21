@@ -56,3 +56,17 @@ foreach ($fixtures as [$owner, $player, $region, $level, $gold]) {
     }
     $accountIds[$player] = (int) $accountId;
 }
+
+$itemInsert = $database->prepare(
+    'INSERT INTO account_items (account_id, item_name, quantity) VALUES (?, ?, ?)
+     ON DUPLICATE KEY UPDATE item_name = account_items.item_name'
+);
+foreach ([
+    ['Яромир', 'Обережный пояс', 1],
+    ['Яромир', 'Ратный клинок', 1],
+    ['Добрыня', 'Липовый щит', 1],
+    ['Мирослава', 'Берестяной оберег', 2],
+    ['Любомир', 'Серебряная гривна', 1],
+] as [$player, $item, $quantity]) {
+    $itemInsert->execute([$accountIds[$player], $item, $quantity]);
+}
