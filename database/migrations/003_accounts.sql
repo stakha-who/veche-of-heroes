@@ -1,0 +1,10 @@
+CREATE TABLE accounts (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    owner_id BIGINT UNSIGNED NOT NULL,
+    current_region_id BIGINT UNSIGNED NOT NULL,
+    player_name VARCHAR(60) NOT NULL UNIQUE,
+    level INT UNSIGNED NOT NULL DEFAULT 1,
+    gold INT UNSIGNED NOT NULL DEFAULT 0,
+    FOREIGN KEY (owner_id) REFERENCES users(id),
+    FOREIGN KEY (current_region_id) REFERENCES regions(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

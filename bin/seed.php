@@ -29,3 +29,30 @@ foreach (['EUW' => 'Западная Европа', 'EUNE' => 'Северо-Во
     $regionInsert->execute([$code, $name]);
 }
 $regionIds = $database->query('SELECT code, id FROM regions')->fetchAll(PDO::FETCH_KEY_PAIR);
+
+$fixtures = [
+    ['demo', 'Яромир', 'EUW', 27, 3000],
+    ['demo', 'Добрыня', 'KR', 31, 4200],
+    ['demo', 'Мирослава', 'RU', 24, 4200],
+    ['demo', 'Ратибор', 'EUW', 12, 1200],
+    ['demo', 'Весна', 'EUW', 17, 4000],
+    ['demo', 'Любомир', 'ASIA', 36, 4300],
+    ['guest', 'Лада', 'EUNE', 9, 3200],
+];
+$accountSelect = $database->prepare('SELECT id FROM accounts WHERE player_name = ?');
+$accountInsert = $database->prepare(
+    'INSERT INTO accounts (owner_id, player_name, current_region_id, level, gold)
+     VALUES (?, ?, ?, ?, ?)'
+);
+$accountIds = [];
+$newAccounts = [];
+foreach ($fixtures as [$owner, $player, $region, $level, $gold]) {
+    $accountSelect->execute([$player]);
+    $accountId = $accountSelect->fetchColumn();
+    if ($accountId === false) {
+        $accountInsert->execute([$userIds[$owner], $player, $regionIds[$region], $level, $gold]);
+        $accountId = $database->lastInsertId();
+        $newAccounts[] = $player;
+    }
+    $accountIds[$player] = (int) $accountId;
+}
