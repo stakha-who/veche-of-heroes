@@ -19,3 +19,9 @@ function connectDatabase(): PDO
     $database->exec("SET time_zone = '+00:00'");
     return $database;
 }
+
+function db(): PDO
+{
+    static $database;
+    return $database ??= connectDatabase();
+}
