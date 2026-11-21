@@ -28,6 +28,9 @@
         <?php if ($quote['next_at'] !== null && $quote['next_at'] > new DateTimeImmutable()): ?>
             <p>Следующая попытка доступна с <?= e($quote['next_at']->format('d.m.Y H:i:s')) ?> UTC.</p>
         <?php endif; ?>
+        <?php if ($quote['source']['code'] === 'KR' && $quote['target'] !== null && $quote['target']['code'] !== 'KR'): ?>
+            <p role="note">После выезда из Кореи вернуться в KR переносом нельзя.</p>
+        <?php endif; ?>
         <?php if ($quote['error'] !== null): ?>
             <p role="alert"><?= e($quote['error']) ?></p>
         <?php endif; ?>
