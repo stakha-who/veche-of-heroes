@@ -1,0 +1,7 @@
+CREATE TABLE seasons (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(80) NOT NULL,
+    starts_at DATETIME NOT NULL UNIQUE,
+    ends_at DATETIME NOT NULL,
+    CHECK (ends_at > starts_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -90,3 +90,20 @@ foreach (['Весна' => '-1 day', 'Любомир' => '-91 days'] as $player =
         $accountTime->execute([$timestamp->format('Y-m-d H:i:s'), $accountIds[$player]]);
     }
 }
+
+$seasonInsert = $database->prepare(
+    'INSERT INTO seasons (name, starts_at, ends_at) VALUES (?, ?, ?)
+     ON DUPLICATE KEY UPDATE starts_at = seasons.starts_at'
+);
+$year = (int) date('Y');
+foreach (range($year - 1, $year + 1) as $seasonYear) {
+    foreach (['01-01', '07-01'] as $half => $monthDay) {
+        $start = new DateTimeImmutable($seasonYear . '-' . $monthDay . ' 00:00:00');
+        $end = $start->modify('+6 months');
+        $seasonInsert->execute([
+            'Сезон ' . ($half + 1) . ' · ' . $seasonYear,
+            $start->format('Y-m-d H:i:s'),
+            $end->format('Y-m-d H:i:s'),
+        ]);
+    }
+}
