@@ -114,3 +114,21 @@ foreach (['Яромир' => 1800, 'Добрыня' => 1730, 'Мирослава'
         $setMmr->execute([$mmr, $accountIds[$player]]);
     }
 }
+
+$utcNow = (new DateTimeImmutable())->format('Y-m-d H:i:s');
+$seasonSelect = $database->prepare('SELECT id FROM seasons WHERE starts_at <= ? AND ends_at > ? ORDER BY starts_at DESC LIMIT 1');
+$seasonSelect->execute([$utcNow, $utcNow]);
+$seasonId = (int) $seasonSelect->fetchColumn();
+$rankInsert = $database->prepare(
+    'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, rank_points, placement_games)
+     VALUES (?, ?, ?, ?, ?, 5)'
+);
+foreach ([
+    ['Яромир', 'EUW', 'Изумруд II', 45],
+    ['Добрыня', 'KR', 'Платина II', 60],
+    ['Любомир', 'ASIA', 'Алмаз IV', 24],
+] as [$player, $region, $rank, $points]) {
+    if (in_array($player, $newAccounts, true) && $seasonId > 0) {
+        $rankInsert->execute([$accountIds[$player], $seasonId, $regionIds[$region], $rank, $points]);
+    }
+}
