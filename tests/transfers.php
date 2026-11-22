@@ -43,3 +43,22 @@ check('Нехватка золотых и недоступный маршрут 
     sameValue($before, accountState($id));
     sameValue(0, transferCount($id));
 });
+
+check('Повтор подтверждения возвращает исходную запись', function (): void {
+    $id = testAccount();
+    $key = bin2hex(random_bytes(16));
+    $first = tryTransfer($id, 'EUW', 'ASIA', $key);
+    $second = tryTransfer($id, 'EUW', 'ASIA', $key);
+    sameValue($first, $second);
+    expectDomainFailure(fn () => tryTransfer($id, 'EUW', 'EUNE', $key), 'другими условиями');
+    sameValue(400, (int) accountState($id)['gold']);
+    sameValue(1, transferCount($id));
+});
+
+check('Вторая форма с прежней версией аккаунта отклоняется', function (): void {
+    $id = testAccount('EUW', 6000);
+    tryTransfer($id, 'EUW', 'ASIA');
+    expectDomainFailure(fn () => tryTransfer($id, 'EUW', 'EUNE'), 'Условия устарели');
+    sameValue(3400, (int) accountState($id)['gold']);
+    sameValue(1, transferCount($id));
+});
