@@ -46,6 +46,10 @@ function performTransfer(
             $database->commit();
             return $previous;
         }
+        if ((int) $account['current_region_id'] !== $sourceId
+            || (int) $account['transfer_version'] !== $sourceVersion) {
+            throw new DomainException('Условия устарели. Проверь их заново.');
+        }
         $quote = transferQuote($database, $account, $targetId, $now);
         if ($quote['error'] !== null) {
             throw new DomainException($quote['error']);
