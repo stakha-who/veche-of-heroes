@@ -36,6 +36,16 @@ function performTransfer(
     $database->beginTransaction();
     try {
         $account = lockedAccount($database, $accountId, $ownerId);
+        $previous = transferReceipt($database, $accountId, $operationKey);
+        if ($previous !== null) {
+            if ((int) $previous['source_region_id'] !== $sourceId
+                || (int) $previous['source_version'] !== $sourceVersion
+                || (int) $previous['target_region_id'] !== $targetId) {
+                throw new DomainException('Этот номер операции уже использован с другими условиями.');
+            }
+            $database->commit();
+            return $previous;
+        }
         $quote = transferQuote($database, $account, $targetId, $now);
         if ($quote['error'] !== null) {
             throw new DomainException($quote['error']);
