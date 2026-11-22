@@ -52,3 +52,16 @@ function transferSubmit(): void
         ], 422);
     }
 }
+
+function transferHistoryPage(): void
+{
+    $account = ownedAccountFromRequest();
+    if ($account === null) {
+        return;
+    }
+    render('history', [
+        'pageTitle' => 'История переносов',
+        'account' => $account,
+        'history' => transferHistory(db(), (int) $account['id']),
+    ]);
+}

@@ -64,3 +64,16 @@ function nextTransferTime(?string $lastTransferAt): ?DateTimeImmutable
     $last = new DateTimeImmutable($lastTransferAt, new DateTimeZone('UTC'));
     return $last->add(new DateInterval('PT' . TRANSFER_COOLDOWN_HOURS . 'H'));
 }
+
+function transferHistory(PDO $database, int $accountId): array
+{
+    $query = $database->prepare(
+        'SELECT t.cost, t.transferred_at, source.code AS source_code, target.code AS target_code
+         FROM transfers t
+         JOIN regions source ON source.id = t.source_region_id
+         JOIN regions target ON target.id = t.target_region_id
+         WHERE t.account_id = ? ORDER BY t.transferred_at DESC, t.id DESC'
+    );
+    $query->execute([$accountId]);
+    return $query->fetchAll();
+}

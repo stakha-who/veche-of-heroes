@@ -18,3 +18,4 @@
     </ul>
 <?php endif; ?>
 <p><a href="/transfer?id=<?= e($account['id']) ?>">Перенести аккаунт</a></p>
+<p><a href="/transfer/history?id=<?= e($account['id']) ?>">История переносов</a></p>
