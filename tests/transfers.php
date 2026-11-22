@@ -62,3 +62,22 @@ check('Вторая форма с прежней версией аккаунта
     sameValue(3400, (int) accountState($id)['gold']);
     sameValue(1, transferCount($id));
 });
+
+check('Ошибка сохранения истории откатывает всю операцию', function () use ($database): void {
+    $id = testAccount();
+    $before = accountState($id);
+    $constraint = 'reject_demo_' . bin2hex(random_bytes(6));
+    $database->exec("ALTER TABLE transfers ADD CONSTRAINT $constraint CHECK (account_id <> $id)");
+    try {
+        try {
+            tryTransfer($id, 'EUW', 'ASIA');
+            throw new RuntimeException('База должна была отклонить запись истории.');
+        } catch (PDOException $exception) {
+            sameValue(3819, (int) ($exception->errorInfo[1] ?? 0));
+        }
+        sameValue($before, accountState($id));
+        sameValue(0, transferCount($id));
+    } finally {
+        $database->exec("ALTER TABLE transfers DROP CHECK $constraint");
+    }
+});
