@@ -107,3 +107,10 @@ foreach (range($year - 1, $year + 1) as $seasonYear) {
         ]);
     }
 }
+
+$setMmr = $database->prepare('UPDATE accounts SET mmr = ? WHERE id = ?');
+foreach (['Яромир' => 1800, 'Добрыня' => 1730, 'Мирослава' => 1680, 'Любомир' => 1920] as $player => $mmr) {
+    if (in_array($player, $newAccounts, true)) {
+        $setMmr->execute([$mmr, $accountIds[$player]]);
+    }
+}
