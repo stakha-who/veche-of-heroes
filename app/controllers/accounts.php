@@ -13,9 +13,16 @@ function accountPage(): void
     if ($account === null) {
         return;
     }
+    $notice = $_SESSION['transfer_notice'] ?? null;
+    if ($notice !== null && $notice['account_id'] === (int) $account['id']) {
+        unset($_SESSION['transfer_notice']);
+    } else {
+        $notice = null;
+    }
     render('account', [
         'pageTitle' => $account['player_name'],
         'account' => $account,
+        'notice' => $notice['text'] ?? null,
         'items' => accountItems(db(), (int) $account['id']),
     ]);
 }

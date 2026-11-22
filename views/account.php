@@ -1,4 +1,7 @@
 <h1><?= e($account['player_name']) ?></h1>
+<?php if ($notice !== null): ?>
+    <p role="status"><?= e($notice) ?></p>
+<?php endif; ?>
 <dl>
     <dt>Регион</dt><dd><?= e($account['region_name']) ?> (<?= e($account['region_code']) ?>)</dd>
     <dt>Уровень</dt><dd><?= e($account['level']) ?></dd>

@@ -34,5 +34,16 @@
         <?php if ($quote['error'] !== null): ?>
             <p role="alert"><?= e($quote['error']) ?></p>
         <?php endif; ?>
+        <?php if ($quote['error'] === null): ?>
+            <form action="/transfer" method="post">
+                <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
+                <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
+                <input type="hidden" name="source_id" value="<?= e($account['current_region_id']) ?>">
+                <input type="hidden" name="source_version" value="<?= e($account['transfer_version']) ?>">
+                <input type="hidden" name="target_id" value="<?= e($targetId) ?>">
+                <input type="hidden" name="operation_key" value="<?= e($operationKey) ?>">
+                <button type="submit">Перенести за <?= e($quote['price']) ?> золотых</button>
+            </form>
+        <?php endif; ?>
     </section>
 <?php endif; ?>

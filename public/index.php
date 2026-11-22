@@ -23,6 +23,7 @@ require __DIR__ . '/../app/controllers/auth.php';
 require __DIR__ . '/../app/models/accounts.php';
 require __DIR__ . '/../app/controllers/accounts.php';
 require __DIR__ . '/../app/models/transfers.php';
+require __DIR__ . '/../app/models/transfer_service.php';
 require __DIR__ . '/../app/controllers/transfers.php';
 
 startSession();
@@ -34,6 +35,7 @@ $routes = [
     'GET /account/new' => 'accountCreatePage',
     'POST /account/new' => 'accountCreateSubmit',
     'GET /transfer' => 'transferPage',
+    'POST /transfer' => 'transferSubmit',
     'GET /login' => 'loginPage',
     'POST /login' => 'loginSubmit',
     'POST /logout' => 'logoutSubmit',
