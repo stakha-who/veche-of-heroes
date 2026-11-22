@@ -19,6 +19,7 @@ services:
     environment:
       DB_HOST: db
       DB_NAME: veche
+      TRANSFER_MMR_LOSS: ${TRANSFER_MMR_LOSS:-20}
       APP_DEMO: ${APP_DEMO:-1}
       DB_USER: veche
       DB_PASSWORD: ${DB_PASSWORD:-veche-local}
