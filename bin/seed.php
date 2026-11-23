@@ -132,3 +132,13 @@ foreach ([
         $rankInsert->execute([$accountIds[$player], $seasonId, $regionIds[$region], $rank, $points]);
     }
 }
+
+$serverInsert = $database->prepare(
+    'INSERT INTO match_servers (region_id, name, is_available) VALUES (?, ?, ?)
+     ON DUPLICATE KEY UPDATE name = match_servers.name'
+);
+foreach (['EUW' => 'Ясный бор', 'EUNE' => 'Северный страж', 'ASIA' => 'Восточные врата',
+          'KR' => 'Горный дозор', 'RU' => 'Ратный двор'] as $code => $name) {
+    $serverInsert->execute([$regionIds[$code], $name, 1]);
+}
+$serverInsert->execute([$regionIds['EUW'], 'Старый острог', 0]);
