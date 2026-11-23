@@ -61,6 +61,9 @@ function performTransfer(
             throw new DomainException($quote['error']);
         }
 
+        $season = requireSeason($database, $now);
+        $sourceRanking = openRanking($database, $accountId, (int) $season['id'], $sourceId);
+        $sourceRank = $sourceRanking['confirmed_rank'] ?? null;
         $time = $now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
         $goldAfter = (int) $account['gold'] - TRANSFER_PRICE;
         $mmrAfter = (int) $account['mmr'] - transferMmrLoss();
@@ -71,14 +74,15 @@ function performTransfer(
         );
         $update->execute([$targetId, $goldAfter, $time, $mmrAfter, $accountId]);
 
+        $rankingId = openCalibration($database, $accountId, (int) $season['id'], $targetId, $sourceRank, $time);
         $save = $database->prepare(
             'INSERT INTO transfers
                 (account_id, source_region_id, target_region_id, source_version, operation_key, cost, gold_after, transferred_at,
-                 mmr_before, mmr_after)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                 mmr_before, mmr_after, season_id, source_rank, target_ranking_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $save->execute([$accountId, $account['current_region_id'], $targetId, $account['transfer_version'],
-            $operationKey, TRANSFER_PRICE, $goldAfter, $time, $account['mmr'], $mmrAfter]);
+            $operationKey, TRANSFER_PRICE, $goldAfter, $time, $account['mmr'], $mmrAfter, $season['id'], $sourceRank, $rankingId]);
         $receipt = transferReceipt($database, $accountId, $operationKey);
         $database->commit();
         return $receipt;

@@ -23,6 +23,8 @@ require __DIR__ . '/../app/controllers/auth.php';
 require __DIR__ . '/../app/models/accounts.php';
 require __DIR__ . '/../app/controllers/accounts.php';
 require __DIR__ . '/../app/models/transfers.php';
+require __DIR__ . '/../app/models/seasons.php';
+require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/transfer_service.php';
 require __DIR__ . '/../app/controllers/transfers.php';
 

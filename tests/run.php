@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 require __DIR__ . '/../app/database.php';
 require __DIR__ . '/../app/models/transfers.php';
+require __DIR__ . '/../app/models/seasons.php';
+require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/transfer_service.php';
 
 if (getenv('APP_TEST') !== '1') {
