@@ -19,11 +19,23 @@ function accountPage(): void
     } else {
         $notice = null;
     }
+    $database = db();
+    $season = activeSeason($database, new DateTimeImmutable());
+    $ranking = $season === null ? null : openRanking(
+        $database, (int) $account['id'], (int) $season['id'], (int) $account['current_region_id']
+    );
+    $olderRank = $season === null || ($ranking['confirmed_rank'] ?? null) !== null
+        ? null : olderSeasonRank($database, (int) $account['id'], $season['starts_at']);
+
     render('account', [
         'pageTitle' => $account['player_name'],
         'account' => $account,
         'notice' => $notice['text'] ?? null,
-        'items' => accountItems(db(), (int) $account['id']),
+        'items' => accountItems($database, (int) $account['id']),
+        'season' => $season,
+        'ranking' => $ranking,
+        'olderRank' => $olderRank,
+        'ranks' => rankingHistory($database, (int) $account['id']),
     ]);
 }
 

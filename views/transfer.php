@@ -24,6 +24,10 @@
         <?php endif; ?>
         <p>Стоимость: <strong><?= e($quote['price']) ?> золотых</strong></p>
         <p>Уровень и инвентарь переезжают с аккаунтом.</p>
+        <p>На новом сервере начнётся калибровка из пяти матчей.</p>
+        <?php if ($provisionalRank !== null): ?>
+            <p>Предварительный ранг — <?= e($provisionalRank) ?>.</p>
+        <?php endif; ?>
         <p>Интервал между переносами — 90 восходов солнца.</p>
         <?php if ($quote['next_at'] !== null && $quote['next_at'] > new DateTimeImmutable()): ?>
             <p>Следующая попытка доступна с <?= e($quote['next_at']->format('d.m.Y H:i:s')) ?> UTC.</p>

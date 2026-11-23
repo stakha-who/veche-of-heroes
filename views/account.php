@@ -7,6 +7,35 @@
     <dt>Уровень</dt><dd><?= e($account['level']) ?></dd>
     <dt>Кошелёк</dt><dd><?= e($account['gold']) ?> золотых</dd>
 </dl>
+<section>
+    <h2>Рейтинг</h2>
+    <?php if ($season !== null): ?>
+        <p><?= e($season['name']) ?></p>
+        <?php if (($ranking['confirmed_rank'] ?? null) !== null): ?>
+            <p><strong><?= e($ranking['confirmed_rank']) ?></strong> · <?= e($ranking['rank_points']) ?> очков ранга</p>
+        <?php else: ?>
+            <p>Калибровка · <?= e($ranking['placement_games'] ?? 0) ?> из <?= e(PLACEMENT_GAMES) ?> матчей</p>
+            <?php if (($ranking['provisional_rank'] ?? null) !== null): ?>
+                <p>Предварительный ранг — <?= e($ranking['provisional_rank']) ?></p>
+            <?php endif; ?>
+            <?php if ($olderRank !== null): ?>
+                <p>Прошлый сезон — <?= e($olderRank['confirmed_rank']) ?></p>
+            <?php endif; ?>
+        <?php endif; ?>
+    <?php else: ?>
+        <p>Сейчас нет активного сезона.</p>
+    <?php endif; ?>
+</section>
+<?php if ($ranks): ?>
+    <details>
+        <summary>История рангов</summary>
+        <ul>
+        <?php foreach ($ranks as $rank): ?>
+            <li><?= e($rank['season_name']) ?> · <?= e($rank['region_code']) ?> · <?= e($rank['confirmed_rank']) ?></li>
+        <?php endforeach; ?>
+        </ul>
+    </details>
+<?php endif; ?>
 <h2>Инвентарь</h2>
 <?php if (!$items): ?>
     <p>В инвентаре пока нет предметов.</p>

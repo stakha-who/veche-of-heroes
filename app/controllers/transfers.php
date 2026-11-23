@@ -11,12 +11,22 @@ function transferPage(): void
     $regions = db()->query('SELECT id, code, name FROM regions ORDER BY id')->fetchAll();
     $quote = $targetId > 0 ? transferQuote(db(), $account, $targetId, new DateTimeImmutable()) : null;
 
+    $provisionalRank = null;
+    if ($quote !== null && $quote['error'] === null) {
+        $season = activeSeason(db(), new DateTimeImmutable());
+        if ($season !== null) {
+            $ranking = openRanking(db(), (int) $account['id'], (int) $season['id'], (int) $account['current_region_id']);
+            $provisionalRank = $ranking['confirmed_rank'] ?? null;
+        }
+    }
+
     render('transfer', [
         'pageTitle' => 'Перенос аккаунта',
         'account' => $account,
         'regions' => $regions,
         'targetId' => $targetId,
         'quote' => $quote,
+        'provisionalRank' => $provisionalRank,
         'operationKey' => bin2hex(random_bytes(16)),
     ]);
 }
