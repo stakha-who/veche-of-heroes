@@ -100,8 +100,17 @@ function finishMatch(
         if (!$isCalibration || $result['outcome'] === 'win') {
             $points = readRankPoints($result['rank_points'] ?? null);
         }
-        $updateRanking = $database->prepare('UPDATE rankings SET placement_games = ?, rank_points = ? WHERE id = ?');
-        $updateRanking->execute([$placements, $points, $ranking['id']]);
+        $confirmedRank = $ranking['confirmed_rank'];
+        if ($isCalibration && $placements === PLACEMENT_GAMES) {
+            $confirmedRank = $result['confirmed_rank'] ?? null;
+            if (!is_string($confirmedRank) || trim($confirmedRank) === '') {
+                throw new DomainException('Рейтинговая система не передала итоговый ранг.');
+            }
+        }
+        $updateRanking = $database->prepare(
+            'UPDATE rankings SET placement_games = ?, rank_points = ?, confirmed_rank = ? WHERE id = ?'
+        );
+        $updateRanking->execute([$placements, $points, $confirmedRank, $ranking['id']]);
 
         if (!is_int($result['mmr_after'] ?? null)) {
             throw new DomainException('Рейтинговая система не передала новое значение MMR.');
