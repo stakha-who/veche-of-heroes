@@ -6,6 +6,8 @@ require __DIR__ . '/../app/models/transfers.php';
 require __DIR__ . '/../app/models/seasons.php';
 require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/transfer_service.php';
+require __DIR__ . '/../app/models/matches.php';
+require __DIR__ . '/../app/models/demo_results.php';
 
 if (getenv('APP_TEST') !== '1') {
     fwrite(STDERR, "Запускай проверки в отдельном окружении с APP_TEST=1.\n");
@@ -90,6 +92,7 @@ function expectDomainFailure(callable $action, string $text): void
 
 require __DIR__ . '/transfers.php';
 require __DIR__ . '/rankings.php';
+require __DIR__ . '/matches.php';
 
 echo ($checks - $failures) . '/' . $checks . ' проверок пройдено' . PHP_EOL;
 exit($failures > 0 ? 1 : 0);
