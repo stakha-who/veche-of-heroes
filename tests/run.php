@@ -89,6 +89,7 @@ function expectDomainFailure(callable $action, string $text): void
 }
 
 require __DIR__ . '/transfers.php';
+require __DIR__ . '/rankings.php';
 
 echo ($checks - $failures) . '/' . $checks . ' проверок пройдено' . PHP_EOL;
 exit($failures > 0 ? 1 : 0);
