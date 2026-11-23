@@ -27,6 +27,8 @@ require __DIR__ . '/../app/models/seasons.php';
 require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/transfer_service.php';
 require __DIR__ . '/../app/controllers/transfers.php';
+require __DIR__ . '/../app/models/matches.php';
+require __DIR__ . '/../app/controllers/matches.php';
 
 startSession();
 
@@ -39,6 +41,7 @@ $routes = [
     'GET /transfer' => 'transferPage',
     'GET /transfer/history' => 'transferHistoryPage',
     'POST /transfer' => 'transferSubmit',
+    'POST /match' => 'matchStart',
     'GET /login' => 'loginPage',
     'POST /login' => 'loginSubmit',
     'POST /logout' => 'logoutSubmit',
