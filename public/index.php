@@ -28,6 +28,7 @@ require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/transfer_service.php';
 require __DIR__ . '/../app/controllers/transfers.php';
 require __DIR__ . '/../app/models/matches.php';
+require __DIR__ . '/../app/models/demo_results.php';
 require __DIR__ . '/../app/controllers/matches.php';
 
 startSession();

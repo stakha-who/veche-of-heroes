@@ -90,9 +90,15 @@ function finishMatch(
             throw new DomainException('Матч уже завершён.');
         }
 
+        if (!is_int($result['mmr_after'] ?? null)) {
+            throw new DomainException('Рейтинговая система не передала новое значение MMR.');
+        }
+        $updateAccount = $database->prepare('UPDATE accounts SET mmr = ? WHERE id = ?');
+        $updateAccount->execute([$result['mmr_after'], $accountId]);
+
         $time = $now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
-        $write = $database->prepare('UPDATE matches SET outcome = ?, completed_at = ? WHERE id = ?');
-        $write->execute([$result['outcome'], $time, $matchId]);
+        $write = $database->prepare('UPDATE matches SET outcome = ?, completed_at = ?, mmr_after = ? WHERE id = ?');
+        $write->execute([$result['outcome'], $time, $result['mmr_after'], $matchId]);
         $match = matchByAccount($database, $matchId, $accountId);
         $database->commit();
         return $match;

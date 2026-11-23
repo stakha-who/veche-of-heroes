@@ -49,7 +49,8 @@ function demoMatchSubmit(): void
     $matchId = readId(postValue('match_id'));
     $outcome = postValue('outcome');
     try {
-        finishMatch(db(), (int) $account['id'], $ownerId, $matchId, ['outcome' => $outcome], new DateTimeImmutable());
+        $result = demoResult(db(), $account, $matchId, $outcome);
+        finishMatch(db(), (int) $account['id'], $ownerId, $matchId, $result, new DateTimeImmutable());
         redirect('/match?id=' . $account['id'] . '&game=' . $matchId);
     } catch (DomainException $exception) {
         render('message', ['pageTitle' => 'Результат отклонён', 'message' => $exception->getMessage()], 422);
