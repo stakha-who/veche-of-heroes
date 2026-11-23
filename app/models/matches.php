@@ -87,10 +87,20 @@ function finishMatch(
             throw new DomainException('Матч не найден.');
         }
         if ($match['completed_at'] !== null) {
-            throw new DomainException('Матч уже завершён.');
+            if ($match['outcome'] !== $result['outcome']) {
+                throw new DomainException('Для матча уже сохранён другой результат.');
+            }
+            $database->commit();
+            return $match;
         }
 
         $ranking = rankingById($database, (int) $match['ranking_id']);
+        $season = requireSeason($database, $now);
+        if ($ranking === null || $ranking['closed_at'] !== null
+            || (int) $ranking['region_id'] !== (int) $account['current_region_id']
+            || (int) $ranking['season_id'] !== (int) $season['id']) {
+            throw new DomainException('Матч относится к прежнему региону или сезону.');
+        }
         $placements = (int) $ranking['placement_games'];
         $isCalibration = $ranking['confirmed_rank'] === null;
         if ($isCalibration) {
