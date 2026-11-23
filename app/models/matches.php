@@ -90,6 +90,19 @@ function finishMatch(
             throw new DomainException('Матч уже завершён.');
         }
 
+        $ranking = rankingById($database, (int) $match['ranking_id']);
+        $placements = (int) $ranking['placement_games'];
+        $isCalibration = $ranking['confirmed_rank'] === null;
+        if ($isCalibration) {
+            $placements = min(PLACEMENT_GAMES, $placements + 1);
+        }
+        $points = (int) $ranking['rank_points'];
+        if (!$isCalibration || $result['outcome'] === 'win') {
+            $points = readRankPoints($result['rank_points'] ?? null);
+        }
+        $updateRanking = $database->prepare('UPDATE rankings SET placement_games = ?, rank_points = ? WHERE id = ?');
+        $updateRanking->execute([$placements, $points, $ranking['id']]);
+
         if (!is_int($result['mmr_after'] ?? null)) {
             throw new DomainException('Рейтинговая система не передала новое значение MMR.');
         }
@@ -108,4 +121,12 @@ function finishMatch(
         }
         throw $exception;
     }
+}
+
+function readRankPoints(mixed $value): int
+{
+    if (!is_int($value) || $value < 0) {
+        throw new DomainException('Рейтинговая система не передала очки ранга.');
+    }
+    return $value;
 }
