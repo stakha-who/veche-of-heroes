@@ -81,3 +81,23 @@ check('Ошибка сохранения истории откатывает в�
         $database->exec("ALTER TABLE transfers DROP CHECK $constraint");
     }
 });
+
+check('После выезда из KR обратный перенос закрыт даже после кулдауна', function () use ($database, $ownerId, $regionIds, $now): void {
+    $id = testAccount('KR', 8000);
+    tryTransfer($id, 'KR', 'EUW');
+    $afterDeparture = accountState($id);
+    $later = $now->add(new DateInterval('PT2160H'));
+    expectDomainFailure(fn () => performTransfer($database, $id, $ownerId, (int) $regionIds['EUW'], 1,
+        (int) $regionIds['KR'], bin2hex(random_bytes(16)), $later), 'Входящий перенос');
+    sameValue($afterDeparture, accountState($id));
+    sameValue(1, transferCount($id));
+});
+
+check('Владелец не может перенести чужой аккаунт', function () use ($database, $ownerId, $regionIds, $now): void {
+    $id = testAccount();
+    $before = accountState($id);
+    expectDomainFailure(fn () => performTransfer($database, $id, $ownerId + 1, (int) $regionIds['EUW'], 0,
+        (int) $regionIds['ASIA'], bin2hex(random_bytes(16)), $now), 'Аккаунт не найден');
+    sameValue($before, accountState($id));
+    sameValue(0, transferCount($id));
+});
