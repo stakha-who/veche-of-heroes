@@ -4,6 +4,9 @@ declare(strict_types=1);
 require __DIR__ . '/../app/database.php';
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+if (PHP_SAPI === 'cli-server' && $path === '/assets/site.css') {
+    return false;
+}
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($path === '/health') {
     header('Content-Type: text/plain; charset=utf-8');

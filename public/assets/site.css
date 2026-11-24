@@ -1,0 +1,85 @@
+:root {
+    color-scheme: light;
+    --paper: #f8f1df;
+    --ink: #211d17;
+    --accent: #783720;
+    --frame: #cfba8f;
+    --muted: #584c3b;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--ink);
+    font: 16px/1.55 system-ui, sans-serif;
+    background: #e6d9bc;
+}
+header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.85rem max(6vw, 1rem);
+    background: #2d261b;
+    color: #fff8e4;
+    border-bottom: 3px solid #a57939;
+}
+header a { color: inherit; }
+.brand {
+    font: 700 1.35rem Georgia, serif;
+    text-decoration: none;
+}
+header form { margin: 0 0 0 auto; }
+main {
+    max-width: 56rem;
+    margin: 2.5rem auto;
+    padding: clamp(1rem, 4vw, 2.5rem);
+    background: var(--paper);
+    border: 1px solid var(--frame);
+    border-top: 4px solid #a57939;
+}
+h1, h2 { font-family: Georgia, serif; line-height: 1.2; }
+h1 { margin: 0 0 1rem; font-size: clamp(2rem, 6vw, 3.5rem); }
+h2 { margin: 0 0 0.7rem; font-size: 1.5rem; }
+p { margin: 0.5rem 0 0.85rem; }
+a { color: var(--accent); text-underline-offset: 0.18em; }
+section, details { border: 1px solid var(--frame); padding: 1rem; margin: 1rem 0; }
+details summary { cursor: pointer; }
+form { margin: 0.75rem 0; }
+label { display: block; max-width: 25rem; margin: 0 0 0.75rem; }
+input, select, button { font: inherit; }
+input, select {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    padding: 0.55rem 0.65rem;
+    color: var(--ink);
+    border: 1px solid #9c8a67;
+    border-radius: 0.2rem;
+    background: #fffaf0;
+}
+button {
+    padding: 0.55rem 0.9rem;
+    background: var(--accent);
+    color: #fffaf0;
+    border: 1px solid var(--accent);
+    border-radius: 0.2rem;
+    cursor: pointer;
+}
+button:hover { background: #5d2817; }
+:focus-visible { outline: 3px solid #357684; outline-offset: 3px; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.4rem 1rem; }
+dt { color: var(--muted); }
+dd { margin: 0; }
+[role=alert], [role=note], [role=status] {
+    border-left: 3px solid var(--accent);
+    background: #efe1c5;
+    padding: 0.6rem 0.8rem;
+}
+table { width: 100%; border-collapse: collapse; }
+td, th { text-align: left; padding: 0.55rem; border-bottom: 1px solid var(--frame); }
+@media (max-width: 34rem) {
+    main { margin: 1rem 0.65rem; }
+    td, th { padding: 0.4rem; }
+    table { font-size: 0.9rem; }
+}
