@@ -6,8 +6,8 @@ check('Перенос снижает MMR и переносит подтверж�
     $season = requireSeason($database, $now);
     $database->prepare('UPDATE accounts SET mmr = 1800 WHERE id = ?')->execute([$id]);
     $database->prepare(
-        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, 5)'
-    )->execute([$id, $season['id'], $regionIds['EUW'], 'Изумруд II']);
+        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, ?)'
+    )->execute([$id, $season['id'], $regionIds['EUW'], 'Изумруд II', PLACEMENT_GAMES]);
 
     $key = bin2hex(random_bytes(16));
     $receipt = tryTransfer($id, 'EUW', 'ASIA', $key);
@@ -27,8 +27,8 @@ check('Ошибка записи сохраняет MMR и исходный ра
     $season = requireSeason($database, $now);
     $database->prepare('UPDATE accounts SET mmr = 1800 WHERE id = ?')->execute([$id]);
     $database->prepare(
-        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, 5)'
-    )->execute([$id, $season['id'], $regionIds['EUW'], 'Изумруд II']);
+        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, ?)'
+    )->execute([$id, $season['id'], $regionIds['EUW'], 'Изумруд II', PLACEMENT_GAMES]);
     $before = accountState($id);
     $beforeRank = openRanking($database, $id, (int) $season['id'], (int) $regionIds['EUW']);
     $key = bin2hex(random_bytes(16));

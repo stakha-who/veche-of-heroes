@@ -6,12 +6,12 @@ check('Возврат в пределах сезона переносит тек
     $season = requireSeason($database, $now);
     $start = new DateTimeImmutable($season['starts_at']);
     $database->prepare(
-        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, 5)'
-    )->execute([$id, $season['id'], $regionIds['EUW'], 'Изумруд II']);
+        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, ?)'
+    )->execute([$id, $season['id'], $regionIds['EUW'], 'Изумруд II', PLACEMENT_GAMES]);
     $first = performTransfer($database, $id, $ownerId, (int) $regionIds['EUW'], 0, (int) $regionIds['ASIA'],
         bin2hex(random_bytes(16)), $start->add(new DateInterval('PT1H')));
-    $database->prepare('UPDATE rankings SET confirmed_rank = ?, placement_games = 5 WHERE id = ?')
-        ->execute(['Алмаз IV', $first['target_ranking_id']]);
+    $database->prepare('UPDATE rankings SET confirmed_rank = ?, placement_games = ? WHERE id = ?')
+        ->execute(['Алмаз IV', PLACEMENT_GAMES, $first['target_ranking_id']]);
     $back = performTransfer($database, $id, $ownerId, (int) $regionIds['ASIA'], 1, (int) $regionIds['EUW'],
         bin2hex(random_bytes(16)), $start->add(new DateInterval('PT2161H')));
     $rank = rankingById($database, (int) $back['target_ranking_id']);
@@ -29,8 +29,8 @@ check('Граница сезона: прошлый ранг в архиве, н�
         throw new RuntimeException('На границе ожидался новый сезон.');
     }
     $database->prepare(
-        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, 5)'
-    )->execute([$id, $old['id'], $regionIds['ASIA'], 'Алмаз IV']);
+        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, ?)'
+    )->execute([$id, $old['id'], $regionIds['ASIA'], 'Алмаз IV', PLACEMENT_GAMES]);
     $receipt = performTransfer($database, $id, $ownerId, (int) $regionIds['ASIA'], 0, (int) $regionIds['EUW'],
         bin2hex(random_bytes(16)), $boundary);
     sameValue((int) $new['id'], (int) $receipt['season_id']);

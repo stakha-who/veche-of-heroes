@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-const PLACEMENT_GAMES = 5;
+const PLACEMENT_GAMES = 3;
 
 function openRanking(PDO $database, int $accountId, int $seasonId, int $regionId): ?array
 {

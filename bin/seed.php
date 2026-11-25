@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/../app/database.php';
+require __DIR__ . '/../app/models/rankings.php';
 
 if (getenv('APP_DEMO') !== '1') {
     exit(0);
@@ -122,7 +123,7 @@ $seasonSelect->execute([$utcNow, $utcNow]);
 $seasonId = (int) $seasonSelect->fetchColumn();
 $rankInsert = $database->prepare(
     'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, rank_points, placement_games)
-     VALUES (?, ?, ?, ?, ?, 5)'
+     VALUES (?, ?, ?, ?, ?, ?)'
 );
 foreach ([
     ['Яромир', 'EUW', 'Изумруд II', 45],
@@ -130,7 +131,7 @@ foreach ([
     ['Любомир', 'ASIA', 'Алмаз IV', 24],
 ] as [$player, $region, $rank, $points]) {
     if (in_array($player, $newAccounts, true) && $seasonId > 0) {
-        $rankInsert->execute([$accountIds[$player], $seasonId, $regionIds[$region], $rank, $points]);
+        $rankInsert->execute([$accountIds[$player], $seasonId, $regionIds[$region], $rank, $points, PLACEMENT_GAMES]);
     }
 }
 
@@ -148,12 +149,12 @@ $olderSeason = $database->prepare('SELECT id FROM seasons WHERE ends_at <= ? ORD
 $olderSeason->execute([$utcNow]);
 $olderSeasonId = (int) $olderSeason->fetchColumn();
 if ($olderSeasonId > 0 && in_array('Зоряна', $newAccounts, true)) {
-    $rankInsert->execute([$accountIds['Зоряна'], $olderSeasonId, $regionIds['EUW'], 'Золото I', 30]);
+    $rankInsert->execute([$accountIds['Зоряна'], $olderSeasonId, $regionIds['EUW'], 'Золото I', 30, PLACEMENT_GAMES]);
 }
 if ($seasonId > 0 && in_array('Любомир', $newAccounts, true)) {
     $archivedRank = $database->prepare(
         'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, rank_points, placement_games, closed_at)
-         VALUES (?, ?, ?, ?, ?, 5, ?)'
+         VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
-    $archivedRank->execute([$accountIds['Любомир'], $seasonId, $regionIds['EUW'], 'Изумруд I', 20, $utcNow]);
+    $archivedRank->execute([$accountIds['Любомир'], $seasonId, $regionIds['EUW'], 'Изумруд I', 20, PLACEMENT_GAMES, $utcNow]);
 }
