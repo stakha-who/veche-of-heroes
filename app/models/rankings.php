@@ -62,3 +62,40 @@ function rankingHistory(PDO $database, int $accountId): array
     $query->execute([$accountId]);
     return $query->fetchAll();
 }
+
+const POINTS_PER_RANK = 50;
+
+function rankLadder(): array
+{
+    $ranks = [];
+    foreach (['Железо', 'Бронза', 'Серебро', 'Золото', 'Платина', 'Изумруд', 'Алмаз'] as $tier) {
+        foreach (['IV', 'III', 'II', 'I'] as $division) {
+            $ranks[] = "$tier $division";
+        }
+    }
+    return [...$ranks, 'Мастер', 'Грандмастер', 'Претендент'];
+}
+
+function rankAfterMatch(array $ranking, string $outcome, bool $isCalibration, bool $lastPlacement): array
+{
+    $ladder = rankLadder();
+    $current = $ranking['confirmed_rank'] ?? $ranking['provisional_rank'] ?? 'Серебро I';
+    $index = array_search($current, $ladder, true);
+    if ($index === false) {
+        throw new DomainException('Не удалось определить текущую ступень рейтинга.');
+    }
+    $change = $outcome === 'win' ? 10 : -8;
+    $points = (int) $ranking['rank_points'] + ($isCalibration ? $change * 2 : $change);
+    while ($points >= POINTS_PER_RANK && $index < count($ladder) - 1) {
+        $points -= POINTS_PER_RANK;
+        $index++;
+    }
+    while ($points < 0 && $index > 0) {
+        $points += POINTS_PER_RANK;
+        $index--;
+    }
+    if ($lastPlacement) {
+        $index = min($index, (int) array_search('Алмаз III', $ladder, true));
+    }
+    return [$ladder[$index], max(0, min(POINTS_PER_RANK - 1, $points))];
+}

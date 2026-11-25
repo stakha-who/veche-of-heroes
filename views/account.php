@@ -16,7 +16,7 @@
         <?php else: ?>
             <p>Калибровка · <?= e($ranking['placement_games'] ?? 0) ?> из <?= e(PLACEMENT_GAMES) ?> матчей</p>
             <?php if (($ranking['provisional_rank'] ?? null) !== null): ?>
-                <p>Предварительный ранг — <?= e($ranking['provisional_rank']) ?></p>
+                <p>Предварительный ранг — <?= e($ranking['provisional_rank']) ?> · <?= e($ranking['rank_points']) ?> из <?= e(POINTS_PER_RANK) ?> очков ранга</p>
             <?php endif; ?>
             <?php if ($olderRank !== null): ?>
                 <p>Прошлый сезон — <?= e($olderRank['confirmed_rank']) ?></p>

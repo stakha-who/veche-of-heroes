@@ -107,21 +107,14 @@ function finishMatch(
         if ($isCalibration) {
             $placements = min(PLACEMENT_GAMES, $placements + 1);
         }
-        $points = (int) $ranking['rank_points'];
-        if (!$isCalibration || $result['outcome'] === 'win') {
-            $points = readRankPoints($result['rank_points'] ?? null);
-        }
-        $confirmedRank = $ranking['confirmed_rank'];
-        if ($isCalibration && $placements === PLACEMENT_GAMES) {
-            $confirmedRank = $result['confirmed_rank'] ?? null;
-            if (!is_string($confirmedRank) || trim($confirmedRank) === '') {
-                throw new DomainException('Рейтинговая система не передала итоговый ранг.');
-            }
-        }
+        $lastPlacement = $isCalibration && $placements === PLACEMENT_GAMES;
+        [$rank, $points] = rankAfterMatch($ranking, $result['outcome'], $isCalibration, $lastPlacement);
+        $provisionalRank = $isCalibration ? $rank : $ranking['provisional_rank'];
+        $confirmedRank = !$isCalibration || $lastPlacement ? $rank : null;
         $updateRanking = $database->prepare(
-            'UPDATE rankings SET placement_games = ?, rank_points = ?, confirmed_rank = ? WHERE id = ?'
+            'UPDATE rankings SET placement_games = ?, rank_points = ?, provisional_rank = ?, confirmed_rank = ? WHERE id = ?'
         );
-        $updateRanking->execute([$placements, $points, $confirmedRank, $ranking['id']]);
+        $updateRanking->execute([$placements, $points, $provisionalRank, $confirmedRank, $ranking['id']]);
 
         if (!is_int($result['mmr_after'] ?? null)) {
             throw new DomainException('Рейтинговая система не передала новое значение MMR.');
@@ -141,12 +134,4 @@ function finishMatch(
         }
         throw $exception;
     }
-}
-
-function readRankPoints(mixed $value): int
-{
-    if (!is_int($value) || $value < 0) {
-        throw new DomainException('Рейтинговая система не передала очки ранга.');
-    }
-    return $value;
 }

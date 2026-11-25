@@ -18,7 +18,7 @@ check('Три уникальных матчей после переноса за
         finishMatch($database, $id, $ownerId, (int) $match['id'], $result, $now);
         $ranking = rankingById($database, (int) $receipt['target_ranking_id']);
         sameValue($number, (int) $ranking['placement_games']);
-        sameValue($number === PLACEMENT_GAMES ? 'Серебро I' : null, $ranking['confirmed_rank']);
+        sameValue($number === PLACEMENT_GAMES ? 'Золото IV' : null, $ranking['confirmed_rank']);
         if ($number === 2) {
             sameValue(1800, (int) accountState($id)['mmr']);
         }
@@ -29,7 +29,7 @@ check('Три уникальных матчей после переноса за
 
 check('Два разных исхода предварительного Алмаза после калибровки', function () use ($database, $ownerId, $now, $regionIds): void {
     $season = requireSeason($database, $now);
-    foreach (['win' => 'Алмаз IV', 'loss' => 'Изумруд I'] as $outcome => $expectedRank) {
+    foreach (['win' => 'Алмаз III', 'loss' => 'Изумруд I'] as $outcome => $expectedRank) {
         $id = testAccount('ASIA');
         $database->prepare(
             'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, ?)'
@@ -46,7 +46,7 @@ check('Два разных исхода предварительного Алм�
         $rank = rankingById($database, $rankingId);
         sameValue($expectedRank, $rank['confirmed_rank']);
         if ($outcome === 'loss') {
-            sameValue(0, (int) $rank['rank_points']);
+            sameValue(2, (int) $rank['rank_points']);
             sameValue(1450, (int) accountState($id)['mmr']);
         }
     }
@@ -77,4 +77,21 @@ check('Нумерация матчей начинается с нуля у ка�
         demoResult($database, accountState($one), (int) $first['id'], 'win'), $now);
     $second = assignMatch($database, $one, $ownerId, $now);
     sameValue(1, (int) $second['account_number']);
+});
+
+check('Обычные матчи дают +10 и −8, переход происходит на 50 очках', function () use ($database, $ownerId, $regionIds, $now): void {
+    $id = testAccount();
+    $season = requireSeason($database, $now);
+    $database->prepare(
+        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, rank_points, placement_games)
+         VALUES (?, ?, ?, ?, ?, ?)'
+    )->execute([$id, $season['id'], $regionIds['EUW'], 'Изумруд II', 45, PLACEMENT_GAMES]);
+    foreach (['win' => ['Изумруд I', 5], 'loss' => ['Изумруд II', 47]] as $outcome => [$expectedRank, $expectedPoints]) {
+        $match = assignMatch($database, $id, $ownerId, $now);
+        finishMatch($database, $id, $ownerId, (int) $match['id'],
+            demoResult($database, accountState($id), (int) $match['id'], $outcome), $now);
+        $rank = rankingById($database, (int) $match['ranking_id']);
+        sameValue($expectedRank, $rank['confirmed_rank']);
+        sameValue($expectedPoints, (int) $rank['rank_points']);
+    }
 });

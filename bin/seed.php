@@ -127,7 +127,7 @@ $rankInsert = $database->prepare(
 );
 foreach ([
     ['Яромир', 'EUW', 'Изумруд II', 45],
-    ['Добрыня', 'KR', 'Платина II', 60],
+    ['Добрыня', 'KR', 'Платина II', 40],
     ['Любомир', 'ASIA', 'Алмаз IV', 24],
 ] as [$player, $region, $rank, $points]) {
     if (in_array($player, $newAccounts, true) && $seasonId > 0) {
