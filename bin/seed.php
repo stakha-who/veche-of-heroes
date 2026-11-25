@@ -37,6 +37,7 @@ $fixtures = [
     ['demo', 'Ратибор', 'EUW', 12, 1200],
     ['demo', 'Весна', 'EUW', 17, 4000],
     ['demo', 'Любомир', 'ASIA', 36, 4300],
+    ['demo', 'Зоряна', 'EUW', 18, 4000],
     ['guest', 'Лада', 'EUNE', 9, 3200],
 ];
 $accountSelect = $database->prepare('SELECT id FROM accounts WHERE player_name = ?');
@@ -142,3 +143,17 @@ foreach (['EUW' => 'Ясный бор', 'EUNE' => 'Северный страж',
     $serverInsert->execute([$regionIds[$code], $name, 1]);
 }
 $serverInsert->execute([$regionIds['EUW'], 'Старый острог', 0]);
+
+$olderSeason = $database->prepare('SELECT id FROM seasons WHERE ends_at <= ? ORDER BY ends_at DESC LIMIT 1');
+$olderSeason->execute([$utcNow]);
+$olderSeasonId = (int) $olderSeason->fetchColumn();
+if ($olderSeasonId > 0 && in_array('Зоряна', $newAccounts, true)) {
+    $rankInsert->execute([$accountIds['Зоряна'], $olderSeasonId, $regionIds['EUW'], 'Золото I', 30]);
+}
+if ($seasonId > 0 && in_array('Любомир', $newAccounts, true)) {
+    $archivedRank = $database->prepare(
+        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, rank_points, placement_games, closed_at)
+         VALUES (?, ?, ?, ?, ?, 5, ?)'
+    );
+    $archivedRank->execute([$accountIds['Любомир'], $seasonId, $regionIds['EUW'], 'Изумруд I', 20, $utcNow]);
+}
