@@ -65,3 +65,16 @@ check('Назначение сервера не меняет регион, ба�
     $noServerId = testAccount($temporary);
     expectDomainFailure(fn () => assignMatch($database, $noServerId, $ownerId, $now), 'нет доступных');
 });
+
+check('Нумерация матчей начинается с нуля у каждого аккаунта', function () use ($database, $ownerId, $now): void {
+    $one = testAccount();
+    $two = testAccount();
+    $first = assignMatch($database, $one, $ownerId, $now);
+    $other = assignMatch($database, $two, $ownerId, $now);
+    sameValue(0, (int) $first['account_number']);
+    sameValue(0, (int) $other['account_number']);
+    finishMatch($database, $one, $ownerId, (int) $first['id'],
+        demoResult($database, accountState($one), (int) $first['id'], 'win'), $now);
+    $second = assignMatch($database, $one, $ownerId, $now);
+    sameValue(1, (int) $second['account_number']);
+});

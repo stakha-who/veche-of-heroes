@@ -16,7 +16,8 @@ function availableMatchServer(PDO $database, int $regionId): ?array
 function matchByAccount(PDO $database, int $matchId, int $accountId): ?array
 {
     $query = $database->prepare(
-        'SELECT m.*, s.name AS server_name, r.code AS region_code
+        'SELECT m.*, s.name AS server_name, r.code AS region_code,
+            (SELECT COUNT(*) FROM matches older WHERE older.account_id = m.account_id AND older.id < m.id) AS account_number
          FROM matches m JOIN match_servers s ON s.id = m.match_server_id
          JOIN regions r ON r.id = s.region_id
          WHERE m.id = ? AND m.account_id = ?'

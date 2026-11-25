@@ -1,4 +1,4 @@
-<h1>Матч №<?= e($match['id']) ?></h1>
+<h1>Матч №<?= e($match['account_number']) ?></h1>
 <p><?= e($account['player_name']) ?> · <?= e($match['server_name']) ?> (<?= e($match['region_code']) ?>)</p>
 <?php if ($match['outcome'] !== null): ?>
     <p role="status">Результат принят — <?= $match['outcome'] === 'win' ? 'победа' : 'поражение' ?>.</p>
