@@ -77,6 +77,19 @@ function transferCount(int $accountId): int
     return (int) $result->fetchColumn();
 }
 
+function rejectHistoryInsert(string $operationKey, callable $check): void
+{
+    global $database;
+    $constraint = 'reject_demo_' . bin2hex(random_bytes(6));
+    $key = $database->quote($operationKey);
+    $database->exec("ALTER TABLE transfers ADD CONSTRAINT $constraint CHECK (operation_key <> $key)");
+    try {
+        $check();
+    } finally {
+        $database->exec("ALTER TABLE transfers DROP CHECK $constraint");
+    }
+}
+
 function expectDomainFailure(callable $action, string $text): void
 {
     try {

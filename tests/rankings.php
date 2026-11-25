@@ -31,11 +31,10 @@ check('Ошибка записи сохраняет MMR и исходный ра
     )->execute([$id, $season['id'], $regionIds['EUW'], 'Изумруд II']);
     $before = accountState($id);
     $beforeRank = openRanking($database, $id, (int) $season['id'], (int) $regionIds['EUW']);
-    $constraint = 'reject_rank_' . bin2hex(random_bytes(6));
-    $database->exec("ALTER TABLE transfers ADD CONSTRAINT $constraint CHECK (account_id <> $id)");
-    try {
+    $key = bin2hex(random_bytes(16));
+    rejectHistoryInsert($key, function () use ($database, $id, $before, $beforeRank, $season, $regionIds, $key): void {
         try {
-            tryTransfer($id, 'EUW', 'ASIA');
+            tryTransfer($id, 'EUW', 'ASIA', $key);
             throw new RuntimeException('База должна была отклонить запись истории.');
         } catch (PDOException $exception) {
             sameValue(3819, (int) ($exception->errorInfo[1] ?? 0));
@@ -43,7 +42,5 @@ check('Ошибка записи сохраняет MMR и исходный ра
         sameValue($before, accountState($id));
         sameValue($beforeRank, openRanking($database, $id, (int) $season['id'], (int) $regionIds['EUW']));
         sameValue(null, openRanking($database, $id, (int) $season['id'], (int) $regionIds['ASIA']));
-    } finally {
-        $database->exec("ALTER TABLE transfers DROP CHECK $constraint");
-    }
+    });
 });

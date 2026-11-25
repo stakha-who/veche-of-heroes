@@ -36,7 +36,7 @@ check('Кулдаун: отказ за секунду до границы и у�
     sameValue(400, (int) accountState($ready)['gold']);
 });
 
-check('Нехватка золотых и недоступный маршрут не меняют профиль', function (): void {
+check('Нехватка золотых не меняет профиль', function (): void {
     $id = testAccount('EUW', 2599);
     $before = accountState($id);
     expectDomainFailure(fn () => tryTransfer($id, 'EUW', 'ASIA'), 'Недостаточно золотых');
@@ -66,20 +66,17 @@ check('Вторая форма с прежней версией аккаунта
 check('Ошибка сохранения истории откатывает всю операцию', function () use ($database): void {
     $id = testAccount();
     $before = accountState($id);
-    $constraint = 'reject_demo_' . bin2hex(random_bytes(6));
-    $database->exec("ALTER TABLE transfers ADD CONSTRAINT $constraint CHECK (account_id <> $id)");
-    try {
+    $key = bin2hex(random_bytes(16));
+    rejectHistoryInsert($key, function () use ($id, $before, $key): void {
         try {
-            tryTransfer($id, 'EUW', 'ASIA');
+            tryTransfer($id, 'EUW', 'ASIA', $key);
             throw new RuntimeException('База должна была отклонить запись истории.');
         } catch (PDOException $exception) {
             sameValue(3819, (int) ($exception->errorInfo[1] ?? 0));
         }
         sameValue($before, accountState($id));
         sameValue(0, transferCount($id));
-    } finally {
-        $database->exec("ALTER TABLE transfers DROP CHECK $constraint");
-    }
+    });
 });
 
 check('После выезда из KR обратный перенос закрыт даже после кулдауна', function () use ($database, $ownerId, $regionIds, $now): void {
@@ -98,6 +95,18 @@ check('Владелец не может перенести чужой аккау
     $before = accountState($id);
     expectDomainFailure(fn () => performTransfer($database, $id, $ownerId + 1, (int) $regionIds['EUW'], 0,
         (int) $regionIds['ASIA'], bin2hex(random_bytes(16)), $now), 'Аккаунт не найден');
+    sameValue($before, accountState($id));
+    sameValue(0, transferCount($id));
+});
+
+check('Закрытый целевой регион отклоняется до списания', function () use ($database, &$regionIds): void {
+    $code = 'STOP' . bin2hex(random_bytes(2));
+    $database->prepare('INSERT INTO regions (code, name, is_available) VALUES (?, ?, 0)')
+        ->execute([$code, 'Закрытый регион для проверки']);
+    $regionIds[$code] = $database->lastInsertId();
+    $id = testAccount();
+    $before = accountState($id);
+    expectDomainFailure(fn () => tryTransfer($id, 'EUW', $code), 'Регион назначения сейчас недоступен');
     sameValue($before, accountState($id));
     sameValue(0, transferCount($id));
 });
