@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-check('Три уникальных матчей после переноса завершают калибровку', function () use ($database, $ownerId, $now): void {
+check('Три уникальных матча после переноса завершают калибровку', function () use ($database, $ownerId, $now): void {
     $id = testAccount();
     $database->prepare('UPDATE accounts SET mmr = 1800 WHERE id = ?')->execute([$id]);
     $before = assignMatch($database, $id, $ownerId, $now);
@@ -9,7 +9,7 @@ check('Три уникальных матчей после переноса за
     $receipt = tryTransfer($id, 'EUW', 'ASIA');
     sameValue(1780, (int) accountState($id)['mmr']);
     expectDomainFailure(fn () => finishMatch($database, $id, $ownerId, (int) $before['id'],
-        ['outcome' => 'win', 'mmr_after' => 1810, 'rank_points' => 10], $now), 'прежнему региону');
+        ['outcome' => 'win', 'mmr_after' => 1810], $now), 'прежнему региону');
     for ($number = 1; $number <= PLACEMENT_GAMES; $number++) {
         $match = assignMatch($database, $id, $ownerId, $now);
         sameValue('ASIA', $match['region_code']);

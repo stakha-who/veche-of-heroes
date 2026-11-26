@@ -27,7 +27,7 @@
     <?php if ($season !== null): ?>
         <p><?= e($season['name']) ?></p>
         <?php if (($ranking['confirmed_rank'] ?? null) !== null): ?>
-            <p><strong><?= e($ranking['confirmed_rank']) ?></strong> · <?= e($ranking['rank_points']) ?> очков ранга</p>
+            <p><strong><?= e($ranking['confirmed_rank']) ?></strong> · <?= e($ranking['rank_points']) ?> из <?= e(POINTS_PER_RANK) ?> очков ранга</p>
         <?php else: ?>
             <p>Калибровка · <?= e($ranking['placement_games'] ?? 0) ?> из <?= e(PLACEMENT_GAMES) ?> матчей</p>
             <?php if (($ranking['provisional_rank'] ?? null) !== null): ?>
