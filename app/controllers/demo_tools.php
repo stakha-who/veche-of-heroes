@@ -51,3 +51,19 @@ function demoItemAddSubmit(): void
         render('message', ['pageTitle' => 'Предмет не добавлен', 'message' => $exception->getMessage()], 422);
     }
 }
+
+function demoItemRemoveSubmit(): void
+{
+    $account = demoAccountFromPost();
+    if ($account === null) {
+        return;
+    }
+    try {
+        $name = removeRandomDemoItem(db(), (int) $account['id'], (int) $account['owner_id']);
+        $text = $name === null ? 'Инвентарь уже пуст.' : 'Удалён предмет «' . $name . '».';
+        $_SESSION['account_action'] = ['account_id' => (int) $account['id'], 'text' => $text];
+        redirect('/account?id=' . $account['id']);
+    } catch (DomainException $exception) {
+        render('message', ['pageTitle' => 'Предмет не удалён', 'message' => $exception->getMessage()], 422);
+    }
+}

@@ -58,6 +58,11 @@
         <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
         <button type="submit">Добавить случайный предмет</button>
     </form>
+    <form action="/account/demo/item/remove" method="post">
+        <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
+        <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
+        <button type="submit"<?= $items ? '' : ' disabled' ?>>Удалить случайный предмет</button>
+    </form>
 <?php endif; ?>
 <?php if (!$items): ?>
     <p>В инвентаре пока нет предметов.</p>

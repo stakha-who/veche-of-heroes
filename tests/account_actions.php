@@ -40,3 +40,18 @@ check('Случайный предмет выбирается из катало�
     tryTransfer($id, 'EUW', 'ASIA');
     sameValue($items, accountItems($database, $id));
 });
+
+check('Случайное удаление убирает один экземпляр и переносит оставшийся инвентарь', function () use ($database, $ownerId): void {
+    $id = testAccount('EUW', 3000);
+    $insert = $database->prepare('INSERT INTO account_items (account_id, item_name, quantity) VALUES (?, ?, ?)');
+    $insert->execute([$id, 'Берестяной оберег', 2]);
+    expectDomainFailure(fn () => removeRandomDemoItem($database, $id, $ownerId + 1), 'Аккаунт не найден');
+    sameValue('Берестяной оберег', removeRandomDemoItem($database, $id, $ownerId));
+    $items = [['item_name' => 'Берестяной оберег', 'quantity' => 1]];
+    sameValue($items, accountItems($database, $id));
+    tryTransfer($id, 'EUW', 'ASIA');
+    sameValue($items, accountItems($database, $id));
+    sameValue('Берестяной оберег', removeRandomDemoItem($database, $id, $ownerId));
+    sameValue([], accountItems($database, $id));
+    sameValue(null, removeRandomDemoItem($database, $id, $ownerId));
+});

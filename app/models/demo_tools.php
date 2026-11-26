@@ -44,3 +44,31 @@ function addRandomDemoItem(PDO $database, int $accountId, int $ownerId): string
         throw $exception;
     }
 }
+
+function removeRandomDemoItem(PDO $database, int $accountId, int $ownerId): ?string
+{
+    $database->beginTransaction();
+    try {
+        lockedAccount($database, $accountId, $ownerId);
+        $query = $database->prepare(
+            'SELECT item_name, quantity FROM account_items WHERE account_id = ? ORDER BY RAND() LIMIT 1'
+        );
+        $query->execute([$accountId]);
+        $item = $query->fetch();
+        if (!$item) {
+            $database->commit();
+            return null;
+        }
+        $change = (int) $item['quantity'] === 1
+            ? 'DELETE FROM account_items WHERE account_id = ? AND item_name = ?'
+            : 'UPDATE account_items SET quantity = quantity - 1 WHERE account_id = ? AND item_name = ?';
+        $database->prepare($change)->execute([$accountId, $item['item_name']]);
+        $database->commit();
+        return $item['item_name'];
+    } catch (Throwable $exception) {
+        if ($database->inTransaction()) {
+            $database->rollBack();
+        }
+        throw $exception;
+    }
+}
