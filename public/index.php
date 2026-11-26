@@ -33,6 +33,8 @@ require __DIR__ . '/../app/controllers/transfers.php';
 require __DIR__ . '/../app/models/matches.php';
 require __DIR__ . '/../app/models/demo_results.php';
 require __DIR__ . '/../app/controllers/matches.php';
+require __DIR__ . '/../app/models/demo_tools.php';
+require __DIR__ . '/../app/controllers/demo_tools.php';
 
 startSession();
 
@@ -42,6 +44,7 @@ $routes = [
     'GET /account' => 'accountPage',
     'GET /account/new' => 'accountCreatePage',
     'POST /account/new' => 'accountCreateSubmit',
+    'POST /account/demo/gold' => 'demoGoldSubmit',
     'POST /account/delete' => 'accountDeleteSubmit',
     'GET /transfer' => 'transferPage',
     'GET /transfer/history' => 'transferHistoryPage',

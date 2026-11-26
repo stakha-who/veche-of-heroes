@@ -25,6 +25,11 @@ function accountPage(): void
     } else {
         $notice = null;
     }
+    $action = $_SESSION['account_action'] ?? null;
+    if ($action !== null && $action['account_id'] === (int) $account['id']) {
+        unset($_SESSION['account_action']);
+        $notice = $action;
+    }
     $database = db();
     $season = activeSeason($database, new DateTimeImmutable());
     $ranking = $season === null ? null : openRanking(

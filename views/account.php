@@ -7,6 +7,14 @@
     <dt>Уровень</dt><dd><?= e($account['level']) ?></dd>
     <dt>Кошелёк</dt><dd><?= e($account['gold']) ?> золотых</dd>
 </dl>
+<?php if (getenv('APP_DEMO') === '1'): ?>
+<form action="/account/demo/gold" method="post">
+    <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
+    <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
+    <button type="submit">Добавить <?= e(TRANSFER_PRICE) ?> золотых</button>
+</form>
+<?php endif; ?>
+
 <section>
     <h2>Рейтинг</h2>
     <?php if ($season !== null): ?>
