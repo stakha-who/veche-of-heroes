@@ -36,3 +36,18 @@ function demoCooldownSubmit(): void
     $_SESSION['account_action'] = ['account_id' => (int) $account['id'], 'text' => 'Ожидание переноса пропущено.'];
     redirect('/account?id=' . $account['id']);
 }
+
+function demoItemAddSubmit(): void
+{
+    $account = demoAccountFromPost();
+    if ($account === null) {
+        return;
+    }
+    try {
+        $name = addRandomDemoItem(db(), (int) $account['id'], (int) $account['owner_id']);
+        $_SESSION['account_action'] = ['account_id' => (int) $account['id'], 'text' => 'Добавлен предмет «' . $name . '».'];
+        redirect('/account?id=' . $account['id']);
+    } catch (DomainException $exception) {
+        render('message', ['pageTitle' => 'Предмет не добавлен', 'message' => $exception->getMessage()], 422);
+    }
+}

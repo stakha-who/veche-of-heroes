@@ -20,3 +20,27 @@ function skipDemoCooldown(PDO $database, int $accountId, int $ownerId): void
     );
     $query->execute([$accountId, $ownerId]);
 }
+
+function addRandomDemoItem(PDO $database, int $accountId, int $ownerId): string
+{
+    $database->beginTransaction();
+    try {
+        lockedAccount($database, $accountId, $ownerId);
+        $name = $database->query('SELECT name FROM item_catalog ORDER BY RAND() LIMIT 1')->fetchColumn();
+        if ($name === false) {
+            throw new DomainException('Каталог предметов пуст.');
+        }
+        $query = $database->prepare(
+            'INSERT INTO account_items (account_id, item_name, quantity) VALUES (?, ?, 1)
+             ON DUPLICATE KEY UPDATE quantity = account_items.quantity + 1'
+        );
+        $query->execute([$accountId, $name]);
+        $database->commit();
+        return $name;
+    } catch (Throwable $exception) {
+        if ($database->inTransaction()) {
+            $database->rollBack();
+        }
+        throw $exception;
+    }
+}

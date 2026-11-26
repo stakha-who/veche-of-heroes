@@ -28,3 +28,15 @@ check('Пропуск ожидания сохраняет историю и за
     tryTransfer($id, 'ASIA', 'EUW', null, 1);
     sameValue(2, transferCount($id));
 });
+
+check('Случайный предмет выбирается из каталога и сохраняется после переноса', function () use ($database, $ownerId): void {
+    $id = testAccount('EUW', 3000);
+    expectDomainFailure(fn () => addRandomDemoItem($database, $id, $ownerId + 1), 'Аккаунт не найден');
+    $name = addRandomDemoItem($database, $id, $ownerId);
+    $catalog = $database->query('SELECT name FROM item_catalog')->fetchAll(PDO::FETCH_COLUMN);
+    sameValue(true, in_array($name, $catalog, true));
+    $items = accountItems($database, $id);
+    sameValue([['item_name' => $name, 'quantity' => 1]], $items);
+    tryTransfer($id, 'EUW', 'ASIA');
+    sameValue($items, accountItems($database, $id));
+});

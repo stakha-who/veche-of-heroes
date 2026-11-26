@@ -52,6 +52,13 @@
     </details>
 <?php endif; ?>
 <h2>Инвентарь</h2>
+<?php if (getenv('APP_DEMO') === '1'): ?>
+    <form action="/account/demo/item/add" method="post">
+        <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
+        <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
+        <button type="submit">Добавить случайный предмет</button>
+    </form>
+<?php endif; ?>
 <?php if (!$items): ?>
     <p>В инвентаре пока нет предметов.</p>
 <?php else: ?>
