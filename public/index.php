@@ -45,6 +45,7 @@ $routes = [
     'GET /account/new' => 'accountCreatePage',
     'POST /account/new' => 'accountCreateSubmit',
     'POST /account/demo/gold' => 'demoGoldSubmit',
+    'POST /account/demo/cooldown' => 'demoCooldownSubmit',
     'POST /account/delete' => 'accountDeleteSubmit',
     'GET /transfer' => 'transferPage',
     'GET /transfer/history' => 'transferHistoryPage',

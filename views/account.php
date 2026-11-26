@@ -13,6 +13,13 @@
     <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
     <button type="submit">Добавить <?= e(TRANSFER_PRICE) ?> золотых</button>
 </form>
+    <?php if (nextTransferTime($account['last_transfer_at']) > new DateTimeImmutable()): ?>
+        <form action="/account/demo/cooldown" method="post">
+            <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
+            <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
+            <button type="submit">Пропустить 90 восходов солнца</button>
+        </form>
+    <?php endif; ?>
 <?php endif; ?>
 
 <section>

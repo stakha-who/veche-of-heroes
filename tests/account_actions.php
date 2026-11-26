@@ -16,3 +16,15 @@ check('Кнопка золотых пополняет только кошелё�
     sameValue(2700, (int) accountState($id)['gold']);
     sameValue(0, transferCount($id));
 });
+
+check('Пропуск ожидания сохраняет историю и запреты маршрутов', function () use ($database, $ownerId): void {
+    $id = testAccount('EUW', 6000);
+    tryTransfer($id, 'EUW', 'ASIA');
+    expectDomainFailure(fn () => tryTransfer($id, 'ASIA', 'EUW', null, 1), '90 восходов');
+    skipDemoCooldown($database, $id, $ownerId);
+    sameValue(1, transferCount($id));
+    sameValue(3400, (int) accountState($id)['gold']);
+    expectDomainFailure(fn () => tryTransfer($id, 'ASIA', 'KR', null, 1), 'Входящий перенос');
+    tryTransfer($id, 'ASIA', 'EUW', null, 1);
+    sameValue(2, transferCount($id));
+});

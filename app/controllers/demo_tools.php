@@ -25,3 +25,14 @@ function demoGoldSubmit(): void
         render('message', ['pageTitle' => 'Пополнение отклонено', 'message' => $exception->getMessage()], 422);
     }
 }
+
+function demoCooldownSubmit(): void
+{
+    $account = demoAccountFromPost();
+    if ($account === null) {
+        return;
+    }
+    skipDemoCooldown(db(), (int) $account['id'], (int) $account['owner_id']);
+    $_SESSION['account_action'] = ['account_id' => (int) $account['id'], 'text' => 'Ожидание переноса пропущено.'];
+    redirect('/account?id=' . $account['id']);
+}
