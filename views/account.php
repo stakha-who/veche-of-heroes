@@ -53,3 +53,8 @@
     <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
     <button type="submit">Начать матч</button>
 </form>
+<form action="/account/delete" method="post" onsubmit="return confirm('Удалить этот аккаунт?');">
+    <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
+    <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
+    <button type="submit">Удалить аккаунт</button>
+</form>

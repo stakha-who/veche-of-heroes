@@ -4,7 +4,13 @@ declare(strict_types=1);
 function accountsPage(): void
 {
     $ownerId = requireLogin();
-    render('accounts', ['pageTitle' => 'Мои аккаунты', 'accounts' => accountsByOwner(db(), $ownerId)]);
+    $notice = $_SESSION['accounts_notice'] ?? null;
+    unset($_SESSION['accounts_notice']);
+    render('accounts', [
+        'pageTitle' => 'Мои аккаунты',
+        'accounts' => accountsByOwner(db(), $ownerId),
+        'notice' => $notice,
+    ]);
 }
 
 function accountPage(): void
@@ -84,4 +90,20 @@ function accountCreateSubmit(): void
     }
 
     redirect('/account?id=' . db()->lastInsertId());
+}
+
+function accountDeleteSubmit(): void
+{
+    $ownerId = requireLogin();
+    if (!validCsrf()) {
+        render('message', ['pageTitle' => 'Форма устарела', 'message' => 'Открой профиль заново.'], 403);
+        return;
+    }
+    $accountId = readId(postValue('account_id'));
+    if (!removeOwnedAccount(db(), $accountId, $ownerId)) {
+        render('message', ['pageTitle' => 'Аккаунт не найден', 'message' => 'Открой аккаунт из своего кабинета.'], 404);
+        return;
+    }
+    $_SESSION['accounts_notice'] = 'Аккаунт удалён.';
+    redirect('/accounts');
 }

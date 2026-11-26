@@ -1,4 +1,7 @@
 <h1>Мои аккаунты</h1>
+<?php if ($notice !== null): ?>
+    <p role="status"><?= e($notice) ?></p>
+<?php endif; ?>
 <p><a href="/account/new">Создать аккаунт</a></p>
 <?php if (!$accounts): ?>
     <p>Игровых аккаунтов пока нет.</p>

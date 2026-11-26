@@ -9,7 +9,7 @@ function transferMmrLoss(): int
 
 function lockedAccount(PDO $database, int $accountId, int $ownerId): array
 {
-    $query = $database->prepare('SELECT * FROM accounts WHERE id = ? AND owner_id = ? FOR UPDATE');
+    $query = $database->prepare('SELECT * FROM accounts WHERE id = ? AND owner_id = ? AND deleted_at IS NULL FOR UPDATE');
     $query->execute([$accountId, $ownerId]);
     $account = $query->fetch();
     if (!$account) {
