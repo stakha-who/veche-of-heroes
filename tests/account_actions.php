@@ -55,3 +55,48 @@ check('Случайное удаление убирает один экземп�
     sameValue([], accountItems($database, $id));
     sameValue(null, removeRandomDemoItem($database, $id, $ownerId));
 });
+
+check('Откат восстанавливает демо-профили с предметами, рангами и исходными регионами', function () use ($database, $ownerId, $now, $regionIds): void {
+    $demoOwner = (int) $database->query("SELECT id FROM users WHERE username = 'demo'")->fetchColumn();
+    $otherId = testAccount();
+    $otherBefore = accountState($otherId);
+    resetDemoAccounts($database, $demoOwner, $now);
+    $find = $database->prepare('SELECT id FROM accounts WHERE owner_id = ? AND player_name = ?');
+    $find->execute([$demoOwner, 'Яромир']);
+    $id = (int) $find->fetchColumn();
+    $beforeItems = accountItems($database, $id);
+
+    $database->prepare('INSERT INTO accounts (owner_id, player_name, current_region_id) VALUES (?, ?, ?)')
+        ->execute([$demoOwner, 'Демо-тест-' . bin2hex(random_bytes(6)), $regionIds['EUNE']]);
+    $createdId = (int) $database->lastInsertId();
+    assignMatch($database, $createdId, $demoOwner, $now);
+    addRandomDemoItem($database, $createdId, $demoOwner);
+    addDemoGold($database, $id, $demoOwner);
+    performTransfer($database, $id, $demoOwner, (int) $regionIds['EUW'], (int) accountState($id)['transfer_version'],
+        (int) $regionIds['ASIA'], bin2hex(random_bytes(16)), $now);
+    $match = assignMatch($database, $id, $demoOwner, $now);
+    finishMatch($database, $id, $demoOwner, (int) $match['id'],
+        demoResult($database, accountState($id), (int) $match['id'], 'win'), $now);
+    removeRandomDemoItem($database, $id, $demoOwner);
+    sameValue(true, removeOwnedAccount($database, $id, $demoOwner));
+
+    resetDemoAccounts($database, $demoOwner, $now);
+    $restored = accountByOwner($database, $id, $demoOwner);
+    sameValue('EUW', $restored['region_code']);
+    sameValue(3000, (int) $restored['gold']);
+    sameValue(1800, (int) $restored['mmr']);
+    sameValue($beforeItems, accountItems($database, $id));
+    sameValue(null, matchByAccount($database, (int) $match['id'], $id));
+    sameValue(0, transferCount($id));
+    $findCreated = $database->prepare('SELECT COUNT(*) FROM accounts WHERE id = ?');
+    $findCreated->execute([$createdId]);
+    sameValue(0, (int) $findCreated->fetchColumn());
+    sameValue($otherBefore, accountState($otherId));
+    $season = requireSeason($database, $now);
+    $rank = openRanking($database, $id, (int) $season['id'], (int) $regionIds['EUW']);
+    sameValue('Изумруд II', $rank['confirmed_rank']);
+    sameValue(45, (int) $rank['rank_points']);
+    $first = assignMatch($database, $id, $demoOwner, $now);
+    sameValue(0, (int) $first['account_number']);
+    resetDemoAccounts($database, $demoOwner, $now);
+});

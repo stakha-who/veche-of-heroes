@@ -8,6 +8,7 @@ require __DIR__ . '/../app/models/seasons.php';
 require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/transfer_service.php';
 require __DIR__ . '/../app/models/matches.php';
+require __DIR__ . '/../app/models/demo_fixtures.php';
 require __DIR__ . '/../app/models/demo_tools.php';
 require __DIR__ . '/../app/models/demo_results.php';
 

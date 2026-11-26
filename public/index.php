@@ -33,6 +33,7 @@ require __DIR__ . '/../app/controllers/transfers.php';
 require __DIR__ . '/../app/models/matches.php';
 require __DIR__ . '/../app/models/demo_results.php';
 require __DIR__ . '/../app/controllers/matches.php';
+require __DIR__ . '/../app/models/demo_fixtures.php';
 require __DIR__ . '/../app/models/demo_tools.php';
 require __DIR__ . '/../app/controllers/demo_tools.php';
 
@@ -41,6 +42,7 @@ startSession();
 $routes = [
     'GET /' => static fn () => render('home'),
     'GET /accounts' => 'accountsPage',
+    'POST /accounts/demo/reset' => 'demoResetSubmit',
     'GET /account' => 'accountPage',
     'GET /account/new' => 'accountCreatePage',
     'POST /account/new' => 'accountCreateSubmit',

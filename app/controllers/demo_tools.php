@@ -26,6 +26,23 @@ function demoGoldSubmit(): void
     }
 }
 
+function demoResetSubmit(): void
+{
+    $ownerId = requireLogin();
+    if (getenv('APP_DEMO') !== '1' || !validCsrf()) {
+        render('message', ['pageTitle' => 'Откат недоступен', 'message' => 'Вернись в список аккаунтов.'], 403);
+        return;
+    }
+    try {
+        resetDemoAccounts(db(), $ownerId, new DateTimeImmutable());
+        unset($_SESSION['account_action'], $_SESSION['transfer_notice'], $_SESSION['csrf']);
+        $_SESSION['accounts_notice'] = 'Стартовые демонстрационные аккаунты восстановлены.';
+        redirect('/accounts');
+    } catch (DomainException $exception) {
+        render('message', ['pageTitle' => 'Откат недоступен', 'message' => $exception->getMessage()], 422);
+    }
+}
+
 function demoCooldownSubmit(): void
 {
     $account = demoAccountFromPost();

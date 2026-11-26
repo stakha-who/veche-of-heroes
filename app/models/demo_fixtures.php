@@ -21,16 +21,31 @@ function demoAccountFixtures(string $username): array
     };
 }
 
-function addDemoAccount(PDO $database, int $ownerId, array $fixture, array $regionIds, DateTimeImmutable $now): int
-{
+function addDemoAccount(
+    PDO $database,
+    int $ownerId,
+    array $fixture,
+    array $regionIds,
+    DateTimeImmutable $now,
+    ?int $accountId = null
+): int {
     [$player, $code, $level, $gold, $mmr, $cooldown, $rank, $items] = $fixture;
     $lastTransfer = $cooldown === null ? null : $now->modify($cooldown)->format('Y-m-d H:i:s');
-    $add = $database->prepare(
-        'INSERT INTO accounts (owner_id, player_name, current_region_id, level, gold, mmr, last_transfer_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)'
-    );
-    $add->execute([$ownerId, $player, $regionIds[$code], $level, $gold, $mmr, $lastTransfer]);
-    $accountId = (int) $database->lastInsertId();
+    if ($accountId === null) {
+        $add = $database->prepare(
+            'INSERT INTO accounts (owner_id, player_name, current_region_id, level, gold, mmr, last_transfer_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)'
+        );
+        $add->execute([$ownerId, $player, $regionIds[$code], $level, $gold, $mmr, $lastTransfer]);
+        $accountId = (int) $database->lastInsertId();
+    } else {
+        $restore = $database->prepare(
+            'UPDATE accounts SET current_region_id = ?, level = ?, gold = ?, mmr = ?, last_transfer_at = ?,
+                deleted_at = NULL, transfer_version = transfer_version + 1
+             WHERE id = ? AND owner_id = ?'
+        );
+        $restore->execute([$regionIds[$code], $level, $gold, $mmr, $lastTransfer, $accountId, $ownerId]);
+    }
 
     $addItem = $database->prepare('INSERT INTO account_items (account_id, item_name, quantity) VALUES (?, ?, ?)');
     foreach ($items as $name => $quantity) {
@@ -58,4 +73,46 @@ function addDemoAccount(PDO $database, int $ownerId, array $fixture, array $regi
         $addRank->execute([$accountId, $season['id'], $regionIds['EUW'], 'Изумруд I', 20, PLACEMENT_GAMES, $now->format('Y-m-d H:i:s')]);
     }
     return $accountId;
+}
+
+function resetDemoAccounts(PDO $database, int $ownerId, DateTimeImmutable $now): void
+{
+    $database->beginTransaction();
+    try {
+        $user = $database->prepare('SELECT username FROM users WHERE id = ? FOR UPDATE');
+        $user->execute([$ownerId]);
+        $fixtures = demoAccountFixtures((string) $user->fetchColumn());
+        if (!$fixtures) {
+            throw new DomainException('У этого пользователя нет стартовых демонстрационных аккаунтов.');
+        }
+
+        $owned = $database->prepare('SELECT player_name, id FROM accounts WHERE owner_id = ? FOR UPDATE');
+        $owned->execute([$ownerId]);
+        $remaining = $owned->fetchAll(PDO::FETCH_KEY_PAIR);
+        foreach (['matches', 'transfers', 'rankings', 'account_items'] as $table) {
+            $delete = $database->prepare(
+                "DELETE data FROM $table AS data JOIN accounts AS a ON a.id = data.account_id WHERE a.owner_id = ?"
+            );
+            $delete->execute([$ownerId]);
+        }
+
+        $regions = $database->query('SELECT code, id FROM regions')->fetchAll(PDO::FETCH_KEY_PAIR);
+        foreach ($fixtures as $fixture) {
+            $name = $fixture[0];
+            $id = isset($remaining[$name]) ? (int) $remaining[$name] : null;
+            addDemoAccount($database, $ownerId, $fixture, $regions, $now, $id);
+            unset($remaining[$name]);
+        }
+
+        $deleteAccount = $database->prepare('DELETE FROM accounts WHERE id = ? AND owner_id = ?');
+        foreach ($remaining as $id) {
+            $deleteAccount->execute([$id, $ownerId]);
+        }
+        $database->commit();
+    } catch (Throwable $exception) {
+        if ($database->inTransaction()) {
+            $database->rollBack();
+        }
+        throw $exception;
+    }
 }

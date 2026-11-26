@@ -13,3 +13,10 @@
         <?php endforeach; ?>
     </ul>
 <?php endif; ?>
+
+<?php if (getenv('APP_DEMO') === '1'): ?>
+    <form action="/accounts/demo/reset" method="post" onsubmit="return confirm('Восстановить стартовые демонстрационные аккаунты? Созданные вручную аккаунты и изменения будут удалены.');">
+        <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
+        <button type="submit">Откатить изменения</button>
+    </form>
+<?php endif; ?>
