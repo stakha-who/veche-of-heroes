@@ -26,7 +26,7 @@ check('Демовремя истекает кулдаун по календар�
     $secondAccountId = testAccount('EUW', 3000, $start);
     $origin = (int) $regionIds['EUW'];
     $target = (int) $regionIds['ASIA'];
-    $receipt = performTransfer($database, $accountId, $ownerId, $origin, 0, $target,
+    $receipt = confirmTestTransfer($database, $accountId, $ownerId, $origin, 0, $target,
         bin2hex(random_bytes(16)), $start);
     $oldSeason = requireSeason($database, $start);
     sameValue(($year + 1) . '-01-01 00:00:00', $oldSeason['ends_at']);
@@ -55,7 +55,7 @@ check('Демовремя истекает кулдаун по календар�
     sameValue($oldSeason['ends_at'], $season['starts_at']);
     sameValue(($year + 1) . '-07-01 00:00:00', $season['ends_at']);
     sameValue(null, openRanking($database, $accountId, (int) $season['id'], $target));
-    $back = performTransfer($database, $accountId, $ownerId, $target, 1, $origin,
+    $back = confirmTestTransfer($database, $accountId, $ownerId, $target, 1, $origin,
         bin2hex(random_bytes(16)), $after);
     sameValue((int) $season['id'], (int) $back['season_id']);
     sameValue($after->format('Y-m-d H:i:s'), $back['transferred_at']);
@@ -105,7 +105,7 @@ check('Откат восстанавливает демо-профили с пр
     assignMatch($database, $createdId, $demoOwner, $now);
     addRandomDemoItem($database, $createdId, $demoOwner);
     addDemoGold($database, $id, $demoOwner);
-    performTransfer($database, $id, $demoOwner, (int) $regionIds['EUW'], (int) accountState($id)['transfer_version'],
+    confirmTestTransfer($database, $id, $demoOwner, (int) $regionIds['EUW'], (int) accountState($id)['transfer_version'],
         (int) $regionIds['ASIA'], bin2hex(random_bytes(16)), $now);
     $match = assignMatch($database, $id, $demoOwner, $now);
     finishMatch($database, $id, $demoOwner, (int) $match['id'],

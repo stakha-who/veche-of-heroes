@@ -16,8 +16,10 @@ $database->exec('SET SESSION innodb_lock_wait_timeout = 12');
 echo $database->query('SELECT CONNECTION_ID()')->fetchColumn() . PHP_EOL;
 
 try {
+    $now = new DateTimeImmutable($argv[6]);
+    $seasonId = (int) requireSeason($database, $now)['id'];
     performTransfer($database, (int) $argv[1], (int) $argv[2], (int) $argv[3], 0,
-        (int) $argv[4], $argv[5], new DateTimeImmutable($argv[6]));
+        (int) $argv[4], $argv[5], $seasonId, null, $now);
     echo 'ok' . PHP_EOL;
 } catch (DomainException $exception) {
     $message = $exception->getMessage();

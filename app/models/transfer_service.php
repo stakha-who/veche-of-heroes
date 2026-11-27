@@ -1,6 +1,14 @@
 <?php
 declare(strict_types=1);
 
+final class StaleTransferConditions extends DomainException
+{
+    public function __construct()
+    {
+        parent::__construct('Условия устарели. Проверь обновлённые условия переноса.');
+    }
+}
+
 function transferMmrLoss(): int
 {
     $value = filter_var(getenv('TRANSFER_MMR_LOSS'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -25,6 +33,12 @@ function transferReceipt(PDO $database, int $accountId, string $operationKey): ?
     return $query->fetch() ?: null;
 }
 
+function transferProvisionalRank(PDO $database, int $accountId, int $seasonId, int $regionId): ?string
+{
+    $ranking = openRanking($database, $accountId, $seasonId, $regionId);
+    return $ranking['confirmed_rank'] ?? null;
+}
+
 function performTransfer(
     PDO $database,
     int $accountId,
@@ -33,7 +47,9 @@ function performTransfer(
     int $sourceVersion,
     int $targetId,
     string $operationKey,
-    DateTimeImmutable $now
+    int $shownSeasonId,
+    ?string $shownRank,
+    ?DateTimeImmutable $now = null
 ): array {
     if (!preg_match('/\A[0-9a-f]{32}\z/', $operationKey)) {
         throw new DomainException('Открой условия переноса и подтверди операцию заново.');
@@ -54,16 +70,23 @@ function performTransfer(
         }
         if ((int) $account['current_region_id'] !== $sourceId
             || (int) $account['transfer_version'] !== $sourceVersion) {
-            throw new DomainException('Условия устарели. Проверь их заново.');
+            throw new StaleTransferConditions();
         }
+        $now ??= gameTime($database, $ownerId);
+        $season = activeSeason($database, $now);
+        if ($season === null || (int) $season['id'] !== $shownSeasonId) {
+            throw new StaleTransferConditions();
+        }
+        $sourceRank = transferProvisionalRank($database, $accountId, (int) $season['id'], $sourceId);
+        if ($sourceRank !== $shownRank) {
+            throw new StaleTransferConditions();
+        }
+
         $quote = transferQuote($database, $account, $targetId, $now);
         if ($quote['error'] !== null) {
             throw new DomainException($quote['error']);
         }
 
-        $season = requireSeason($database, $now);
-        $sourceRanking = openRanking($database, $accountId, (int) $season['id'], $sourceId);
-        $sourceRank = $sourceRanking['confirmed_rank'] ?? null;
         $time = $now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
         $goldAfter = (int) $account['gold'] - TRANSFER_PRICE;
         $mmrAfter = (int) $account['mmr'] - transferMmrLoss();

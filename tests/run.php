@@ -69,8 +69,23 @@ function accountState(int $accountId): array
 function tryTransfer(int $accountId, string $source, string $target, ?string $key = null, int $version = 0): array
 {
     global $database, $ownerId, $regionIds, $now;
-    return performTransfer($database, $accountId, $ownerId, (int) $regionIds[$source], $version,
+    return confirmTestTransfer($database, $accountId, $ownerId, (int) $regionIds[$source], $version,
         (int) $regionIds[$target], $key ?? bin2hex(random_bytes(16)), $now);
+}
+
+function confirmTestTransfer(
+    PDO $database,
+    int $accountId,
+    int $ownerId,
+    int $sourceId,
+    int $version,
+    int $targetId,
+    string $key,
+    DateTimeImmutable $now
+): array {
+    $seasonId = (int) requireSeason($database, $now)['id'];
+    $rank = transferProvisionalRank($database, $accountId, $seasonId, $sourceId);
+    return performTransfer($database, $accountId, $ownerId, $sourceId, $version, $targetId, $key, $seasonId, $rank, $now);
 }
 
 function transferCount(int $accountId): int

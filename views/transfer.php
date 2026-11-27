@@ -1,4 +1,7 @@
 <h1>Перенос аккаунта</h1>
+<?php if ($notice !== null): ?>
+    <p role="alert"><?= e($notice) ?></p>
+<?php endif; ?>
 <p><a href="/account?id=<?= e($account['id']) ?>"><?= e($account['player_name']) ?></a>
     · <?= e($account['region_code']) ?> · <?= e($account['gold']) ?> золотых</p>
 <form action="/transfer" method="get">
@@ -25,8 +28,9 @@
         <p>Стоимость: <strong><?= e($quote['price']) ?> золотых</strong></p>
         <p>Уровень и инвентарь переезжают с аккаунтом.</p>
         <p>На новом сервере начнётся калибровка. Матчей для завершения: <?= e(PLACEMENT_GAMES) ?>.</p>
-        <?php if ($provisionalRank !== null): ?>
-            <p>Предварительный ранг — <?= e($provisionalRank) ?>.</p>
+        <?php if ($season !== null): ?>
+            <p>Текущий сезон: <?= e($season['name']) ?>.</p>
+            <p>Предварительный ранг: <?= e($provisionalRank ?? 'не назначен') ?>.</p>
         <?php endif; ?>
         <p>Интервал между переносами — 90 восходов солнца.</p>
         <?php if ($quote['next_at'] !== null && $quote['next_at'] > $now): ?>
@@ -45,6 +49,8 @@
                 <input type="hidden" name="source_id" value="<?= e($account['current_region_id']) ?>">
                 <input type="hidden" name="source_version" value="<?= e($account['transfer_version']) ?>">
                 <input type="hidden" name="target_id" value="<?= e($targetId) ?>">
+                <input type="hidden" name="season_id" value="<?= e($season['id']) ?>">
+                <input type="hidden" name="provisional_rank" value="<?= e($provisionalRank ?? '') ?>">
                 <input type="hidden" name="operation_key" value="<?= e($operationKey) ?>">
                 <button type="submit">Перенести за <?= e($quote['price']) ?> золотых</button>
             </form>

@@ -44,11 +44,13 @@ check('Нехватка золотых не меняет профиль', functi
     sameValue(0, transferCount($id));
 });
 
-check('Повтор подтверждения возвращает исходную запись', function (): void {
+check('Повтор подтверждения возвращает исходную запись даже после смены сезона', function () use ($database, $ownerId, $regionIds, $now): void {
     $id = testAccount();
     $key = bin2hex(random_bytes(16));
     $first = tryTransfer($id, 'EUW', 'ASIA', $key);
-    $second = tryTransfer($id, 'EUW', 'ASIA', $key);
+    $season = requireSeason($database, $now);
+    $second = performTransfer($database, $id, $ownerId, (int) $regionIds['EUW'], 0, (int) $regionIds['ASIA'],
+        $key, (int) $season['id'], null, new DateTimeImmutable($season['ends_at']));
     sameValue($first, $second);
     expectDomainFailure(fn () => tryTransfer($id, 'EUW', 'EUNE', $key), 'другими условиями');
     sameValue(400, (int) accountState($id)['gold']);
@@ -61,6 +63,58 @@ check('Вторая форма с прежней версией аккаунта
     expectDomainFailure(fn () => tryTransfer($id, 'EUW', 'EUNE'), 'Условия устарели');
     sameValue(3400, (int) accountState($id)['gold']);
     sameValue(1, transferCount($id));
+});
+
+check('Повышение ранга требует нового подтверждения переноса', function () use ($database, $ownerId, $regionIds, $now): void {
+    $id = testAccount();
+    $source = (int) $regionIds['EUW'];
+    $target = (int) $regionIds['ASIA'];
+    $seasonId = (int) requireSeason($database, $now)['id'];
+    $database->prepare(
+        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, rank_points, placement_games)
+         VALUES (?, ?, ?, ?, ?, ?)'
+    )->execute([$id, $seasonId, $source, 'Изумруд II', 45, PLACEMENT_GAMES]);
+    $key = bin2hex(random_bytes(16));
+    $match = assignMatch($database, $id, $ownerId, $now);
+    $matchId = (int) $match['id'];
+    finishMatch($database, $id, $ownerId, $matchId, demoResult($database, accountState($id), $matchId, 'win'), $now);
+    sameValue('Изумруд I', transferProvisionalRank($database, $id, $seasonId, $source));
+
+    $before = accountState($id);
+    expectDomainFailure(fn () => performTransfer($database, $id, $ownerId, $source, 0, $target,
+        $key, $seasonId, 'Изумруд II', $now), 'Условия устарели');
+    sameValue($before, accountState($id));
+    sameValue(3000, (int) $before['gold']);
+    sameValue(0, transferCount($id));
+
+    $receipt = confirmTestTransfer($database, $id, $ownerId, $source, 0, $target, bin2hex(random_bytes(16)), $now);
+    sameValue('Изумруд I', $receipt['source_rank']);
+    sameValue(400, (int) accountState($id)['gold']);
+    sameValue(1, transferCount($id));
+});
+
+check('Смена сезона отклоняет старую форму даже без предварительного ранга', function () use ($database, $ownerId, $regionIds, $now): void {
+    $id = testAccount();
+    $season = requireSeason($database, $now);
+    $later = new DateTimeImmutable($season['ends_at']);
+    expectDomainFailure(fn () => performTransfer($database, $id, $ownerId,
+        (int) $regionIds['EUW'], 0, (int) $regionIds['ASIA'], bin2hex(random_bytes(16)),
+        (int) $season['id'], null, $later), 'Условия устарели');
+    sameValue(3000, (int) accountState($id)['gold']);
+    sameValue(0, transferCount($id));
+});
+
+check('Появление предварительного ранга требует нового подтверждения', function () use ($database, $ownerId, $regionIds, $now): void {
+    $id = testAccount();
+    $source = (int) $regionIds['EUW'];
+    $seasonId = (int) requireSeason($database, $now)['id'];
+    $database->prepare(
+        'INSERT INTO rankings (account_id, season_id, region_id, confirmed_rank, placement_games) VALUES (?, ?, ?, ?, ?)'
+    )->execute([$id, $seasonId, $source, 'Золото I', PLACEMENT_GAMES]);
+    expectDomainFailure(fn () => performTransfer($database, $id, $ownerId, $source, 0, (int) $regionIds['ASIA'],
+        bin2hex(random_bytes(16)), $seasonId, null, $now), 'Условия устарели');
+    sameValue(3000, (int) accountState($id)['gold']);
+    sameValue(0, transferCount($id));
 });
 
 check('Ошибка сохранения истории откатывает всю операцию', function () use ($database): void {
@@ -84,7 +138,7 @@ check('После выезда из KR обратный перенос закр�
     tryTransfer($id, 'KR', 'EUW');
     $afterDeparture = accountState($id);
     $later = $now->add(new DateInterval('PT2160H'));
-    expectDomainFailure(fn () => performTransfer($database, $id, $ownerId, (int) $regionIds['EUW'], 1,
+    expectDomainFailure(fn () => confirmTestTransfer($database, $id, $ownerId, (int) $regionIds['EUW'], 1,
         (int) $regionIds['KR'], bin2hex(random_bytes(16)), $later), 'Входящий перенос');
     sameValue($afterDeparture, accountState($id));
     sameValue(1, transferCount($id));
@@ -93,7 +147,7 @@ check('После выезда из KR обратный перенос закр�
 check('Владелец не может перенести чужой аккаунт', function () use ($database, $ownerId, $regionIds, $now): void {
     $id = testAccount();
     $before = accountState($id);
-    expectDomainFailure(fn () => performTransfer($database, $id, $ownerId + 1, (int) $regionIds['EUW'], 0,
+    expectDomainFailure(fn () => confirmTestTransfer($database, $id, $ownerId + 1, (int) $regionIds['EUW'], 0,
         (int) $regionIds['ASIA'], bin2hex(random_bytes(16)), $now), 'Аккаунт не найден');
     sameValue($before, accountState($id));
     sameValue(0, transferCount($id));
