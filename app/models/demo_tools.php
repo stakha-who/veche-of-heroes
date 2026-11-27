@@ -38,20 +38,29 @@ function addRandomDemoItem(PDO $database, int $accountId, int $ownerId): string
     }
 }
 
+function demoItemAtPosition(array $items, int $position): array
+{
+    foreach ($items as $item) {
+        $position -= (int) $item['quantity'];
+        if ($position <= 0) {
+            return $item;
+        }
+    }
+    throw new LogicException('Выбранный экземпляр не найден в инвентаре.');
+}
+
 function removeRandomDemoItem(PDO $database, int $accountId, int $ownerId): ?string
 {
     $database->beginTransaction();
     try {
         lockedAccount($database, $accountId, $ownerId);
-        $query = $database->prepare(
-            'SELECT item_name, quantity FROM account_items WHERE account_id = ? ORDER BY RAND() LIMIT 1'
-        );
-        $query->execute([$accountId]);
-        $item = $query->fetch();
-        if (!$item) {
+        $items = accountItems($database, $accountId);
+        $total = array_sum(array_column($items, 'quantity'));
+        if ($total === 0) {
             $database->commit();
             return null;
         }
+        $item = demoItemAtPosition($items, random_int(1, $total));
         $change = (int) $item['quantity'] === 1
             ? 'DELETE FROM account_items WHERE account_id = ? AND item_name = ?'
             : 'UPDATE account_items SET quantity = quantity - 1 WHERE account_id = ? AND item_name = ?';

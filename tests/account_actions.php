@@ -89,6 +89,18 @@ check('Случайное удаление убирает один экземп�
     sameValue(null, removeRandomDemoItem($database, $id, $ownerId));
 });
 
+check('Десять поясов и один клинок занимают одиннадцать равновероятных позиций', function (): void {
+    $items = [
+        ['item_name' => 'Обережный пояс', 'quantity' => 10],
+        ['item_name' => 'Ратный клинок', 'quantity' => 1],
+    ];
+    $names = [];
+    foreach (range(1, 11) as $position) {
+        $names[] = demoItemAtPosition($items, $position)['item_name'];
+    }
+    sameValue(['Обережный пояс' => 10, 'Ратный клинок' => 1], array_count_values($names));
+});
+
 check('Откат восстанавливает демо-профили с предметами, рангами и исходными регионами', function () use ($database, $ownerId, $now, $regionIds): void {
     $demoOwner = (int) $database->query("SELECT id FROM users WHERE username = 'demo'")->fetchColumn();
     $otherId = testAccount();
