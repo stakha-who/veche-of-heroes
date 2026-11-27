@@ -79,8 +79,18 @@ $existing = $database->prepare('SELECT 1 FROM accounts WHERE player_name = ?');
 foreach ($userIds as $username => $ownerId) {
     foreach (demoAccountFixtures($username) as $fixture) {
         $existing->execute([$fixture[0]]);
-        if ($existing->fetchColumn() === false) {
+        if ($existing->fetchColumn() !== false) {
+            continue;
+        }
+        $database->beginTransaction();
+        try {
             addDemoAccount($database, $ownerId, $fixture, $regionIds, gameTime($database, $ownerId, $now));
+            $database->commit();
+        } catch (Throwable $exception) {
+            if ($database->inTransaction()) {
+                $database->rollBack();
+            }
+            throw $exception;
         }
     }
 }

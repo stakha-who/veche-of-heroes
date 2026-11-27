@@ -1,4 +1,4 @@
-CREATE TABLE item_catalog (
+CREATE TABLE IF NOT EXISTS item_catalog (
     name VARCHAR(100) NOT NULL PRIMARY KEY
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -14,4 +14,5 @@ INSERT INTO item_catalog (name) VALUES
     ('Кованая пряжка'),
     ('Рябиновый посох'),
     ('Вышитый плащ'),
-    ('Путевой фонарь');
+    ('Путевой фонарь')
+ON DUPLICATE KEY UPDATE name = item_catalog.name;

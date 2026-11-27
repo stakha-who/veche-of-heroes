@@ -3,6 +3,22 @@ declare(strict_types=1);
 
 require __DIR__ . '/../app/database.php';
 
+function demoClockColumnExists(PDO $database): bool
+{
+    $column = $database->query(
+        "SELECT COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'demo_days_elapsed'"
+    )->fetch();
+    if ($column === false) {
+        return false;
+    }
+    if ($column['COLUMN_TYPE'] !== 'smallint unsigned' || $column['IS_NULLABLE'] !== 'NO'
+        || (string) $column['COLUMN_DEFAULT'] !== '0' || $column['EXTRA'] !== '') {
+        throw new RuntimeException('Миграция 019: users.demo_days_elapsed должен быть SMALLINT UNSIGNED NOT NULL DEFAULT 0.');
+    }
+    return true;
+}
+
 $database = connectDatabase();
 $database->exec('CREATE TABLE IF NOT EXISTS schema_migrations (
     name VARCHAR(120) PRIMARY KEY,
@@ -17,9 +33,11 @@ foreach ($files as $file) {
     if (in_array($name, $applied, true)) {
         continue;
     }
-    $statements = array_filter(array_map('trim', explode(';', file_get_contents($file))));
-    foreach ($statements as $statement) {
-        $database->exec($statement);
+    if ($name !== '019_demo_clock.sql' || !demoClockColumnExists($database)) {
+        $statements = array_filter(array_map('trim', explode(';', file_get_contents($file))));
+        foreach ($statements as $statement) {
+            $database->exec($statement);
+        }
     }
     $save->execute([$name]);
     echo $name . PHP_EOL;
