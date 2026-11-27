@@ -107,6 +107,7 @@ function expectDomainFailure(callable $action, string $text): void
 }
 
 require __DIR__ . '/transfers.php';
+require __DIR__ . '/concurrent_transfer.php';
 require __DIR__ . '/rankings.php';
 require __DIR__ . '/matches.php';
 require __DIR__ . '/seasons.php';
