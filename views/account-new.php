@@ -7,6 +7,13 @@
     <label>Имя игрока
         <input name="player_name" required minlength="2" maxlength="30" value="<?= e($playerName) ?>">
     </label>
+    <label>Пол персонажа
+        <select name="gender">
+            <option value="">Не указан</option>
+            <option value="female"<?= $selectedGender === 'female' ? ' selected' : '' ?>>Женский</option>
+            <option value="male"<?= $selectedGender === 'male' ? ' selected' : '' ?>>Мужской</option>
+        </select>
+    </label>
     <label>Начальный регион
         <select name="region_id" required>
             <option value="">Выбери регион</option>

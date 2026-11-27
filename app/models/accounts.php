@@ -1,6 +1,36 @@
 <?php
 declare(strict_types=1);
 
+const ACCOUNT_AVATAR_COUNT = 6;
+
+function randomAccountAvatarId(string $gender): int
+{
+    $portraits = match ($gender) {
+        'female' => [2, 5],
+        'male' => [1, 3, 4, 6],
+        default => range(1, ACCOUNT_AVATAR_COUNT),
+    };
+    return $portraits[random_int(0, count($portraits) - 1)];
+}
+
+function accountAvatarId(array $account): int
+{
+    $avatar = (int) ($account['avatar_id'] ?? 0);
+    if ($avatar >= 1 && $avatar <= ACCOUNT_AVATAR_COUNT) {
+        return $avatar;
+    }
+
+    return match ($account['player_name']) {
+        'Яромир' => 1,
+        'Мирослава', 'Зоряна' => 2,
+        'Добрыня' => 3,
+        'Велимир' => 4,
+        'Весна', 'Лада' => 5,
+        'Любомир', 'Ратибор' => 6,
+        default => 1 + ((int) $account['id'] - 1) % ACCOUNT_AVATAR_COUNT,
+    };
+}
+
 function accountsByOwner(PDO $database, int $ownerId): array
 {
     $query = $database->prepare(

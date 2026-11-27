@@ -61,6 +61,7 @@ function accountCreatePage(string $message = '', int $status = 200): void
         'regions' => availableRegions(db()),
         'playerName' => trim(postValue('player_name')),
         'selectedRegion' => readId(postValue('region_id')),
+        'selectedGender' => postValue('gender'),
     ], $status);
 }
 
@@ -73,17 +74,22 @@ function accountCreateSubmit(): void
     }
     $name = trim(postValue('player_name'));
     $regionId = readId(postValue('region_id'));
+    $gender = postValue('gender');
     if (!preg_match('/\A[\p{L}\p{N} _-]{2,30}\z/u', $name) || $regionId === 0) {
         accountCreatePage('Укажи имя из 2–30 букв, цифр или пробелов и выбери регион.', 422);
+        return;
+    }
+    if (!in_array($gender, ['', 'female', 'male'], true)) {
+        accountCreatePage('Выбери пол персонажа или оставь поле пустым.', 422);
         return;
     }
 
     try {
         $query = db()->prepare(
-            'INSERT INTO accounts (owner_id, player_name, current_region_id)
-             SELECT ?, ?, id FROM regions WHERE id = ? AND is_available = 1'
+            'INSERT INTO accounts (owner_id, player_name, current_region_id, avatar_id)
+             SELECT ?, ?, id, ? FROM regions WHERE id = ? AND is_available = 1'
         );
-        $query->execute([$ownerId, $name, $regionId]);
+        $query->execute([$ownerId, $name, randomAccountAvatarId($gender), $regionId]);
         if ($query->rowCount() !== 1) {
             accountCreatePage('Этот регион сейчас недоступен.', 422);
             return;

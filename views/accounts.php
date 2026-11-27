@@ -12,7 +12,11 @@
         <ul class="roster">
             <?php foreach ($accounts as $account): ?>
                 <li>
-                    <a href="/account?id=<?= e($account['id']) ?>"><?= e($account['player_name']) ?></a>
+                    <a href="/account?id=<?= e($account['id']) ?>">
+                        <span class="hero-portrait hero-portrait--<?= e(accountAvatarId($account)) ?>" aria-hidden="true"></span>
+                        <span class="roster-name"><?= e($account['player_name']) ?></span>
+                    </a>
+                    <span class="roster-rule" aria-hidden="true"></span>
                     <span class="region-mark"><?= e($account['region_code']) ?></span>
                     <span class="roster-balance"><?= e($account['gold']) ?> золотых</span>
                 </li>

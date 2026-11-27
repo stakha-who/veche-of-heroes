@@ -4,7 +4,7 @@ declare(strict_types=1);
 require __DIR__ . '/../app/database.php';
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-if (PHP_SAPI === 'cli-server' && $path === '/assets/site.css') {
+if (PHP_SAPI === 'cli-server' && in_array($path, ['/assets/site.css', '/assets/portraits.webp'], true)) {
     return false;
 }
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';

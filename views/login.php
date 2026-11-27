@@ -1,3 +1,4 @@
+<span class="paper-bookmark" aria-hidden="true"><svg class="icon"><use href="#icon-leaf"/></svg></span>
 <h1>Вход в кабинет</h1>
 <?php if (isset($message)): ?>
     <p class="notice notice--error" role="alert"><?= e($message) ?></p>

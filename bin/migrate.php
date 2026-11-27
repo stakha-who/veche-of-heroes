@@ -3,18 +3,28 @@ declare(strict_types=1);
 
 require __DIR__ . '/../app/database.php';
 
-function demoClockColumnExists(PDO $database): bool
+function migrationColumnExists(PDO $database, string $migration): bool
 {
-    $column = $database->query(
-        "SELECT COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'demo_days_elapsed'"
-    )->fetch();
-    if ($column === false) {
+    $definition = match ($migration) {
+        '019_demo_clock.sql' => ['users', 'demo_days_elapsed', 'smallint unsigned', 'NO', '0'],
+        '020_account_avatar.sql' => ['accounts', 'avatar_id', 'tinyint unsigned', 'YES', null],
+        default => null,
+    };
+    if ($definition === null) {
         return false;
     }
-    if ($column['COLUMN_TYPE'] !== 'smallint unsigned' || $column['IS_NULLABLE'] !== 'NO'
-        || (string) $column['COLUMN_DEFAULT'] !== '0' || $column['EXTRA'] !== '') {
-        throw new RuntimeException('Миграция 019: users.demo_days_elapsed должен быть SMALLINT UNSIGNED NOT NULL DEFAULT 0.');
+    [$table, $column, $type, $nullable, $default] = $definition;
+    $query = $database->prepare(
+        'SELECT COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?'
+    );
+    $query->execute([$table, $column]);
+    $actual = $query->fetch(PDO::FETCH_NUM);
+    if ($actual === false) {
+        return false;
+    }
+    if ($actual !== [$type, $nullable, $default, '']) {
+        throw new RuntimeException('Миграция ' . substr($migration, 0, 3) . ": неправильное определение $table.$column.");
     }
     return true;
 }
@@ -33,7 +43,7 @@ foreach ($files as $file) {
     if (in_array($name, $applied, true)) {
         continue;
     }
-    if ($name !== '019_demo_clock.sql' || !demoClockColumnExists($database)) {
+    if (!migrationColumnExists($database, $name)) {
         $statements = array_filter(array_map('trim', explode(';', file_get_contents($file))));
         foreach ($statements as $statement) {
             $database->exec($statement);
