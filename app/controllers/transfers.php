@@ -9,11 +9,12 @@ function transferPage(): void
     }
     $targetId = readId($_GET['target'] ?? null);
     $regions = db()->query('SELECT id, code, name FROM regions ORDER BY id')->fetchAll();
-    $quote = $targetId > 0 ? transferQuote(db(), $account, $targetId, new DateTimeImmutable()) : null;
+    $now = gameTime(db(), (int) $account['owner_id']);
+    $quote = $targetId > 0 ? transferQuote(db(), $account, $targetId, $now) : null;
 
     $provisionalRank = null;
     if ($quote !== null && $quote['error'] === null) {
-        $season = activeSeason(db(), new DateTimeImmutable());
+        $season = activeSeason(db(), $now);
         if ($season !== null) {
             $ranking = openRanking(db(), (int) $account['id'], (int) $season['id'], (int) $account['current_region_id']);
             $provisionalRank = $ranking['confirmed_rank'] ?? null;
@@ -26,6 +27,7 @@ function transferPage(): void
         'regions' => $regions,
         'targetId' => $targetId,
         'quote' => $quote,
+        'now' => $now,
         'provisionalRank' => $provisionalRank,
         'operationKey' => bin2hex(random_bytes(16)),
     ]);
@@ -48,7 +50,7 @@ function transferSubmit(): void
         $receipt = performTransfer(
             db(), $accountId, $ownerId, readId(postValue('source_id')),
             $sourceVersion === false ? -1 : $sourceVersion, readId(postValue('target_id')),
-            postValue('operation_key'), new DateTimeImmutable()
+            postValue('operation_key'), gameTime(db(), $ownerId)
         );
         $_SESSION['transfer_notice'] = [
             'account_id' => $accountId,

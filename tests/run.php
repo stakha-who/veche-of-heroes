@@ -5,6 +5,7 @@ require __DIR__ . '/../app/database.php';
 require __DIR__ . '/../app/models/accounts.php';
 require __DIR__ . '/../app/models/transfers.php';
 require __DIR__ . '/../app/models/seasons.php';
+require __DIR__ . '/../app/models/game_clock.php';
 require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/transfer_service.php';
 require __DIR__ . '/../app/models/matches.php';

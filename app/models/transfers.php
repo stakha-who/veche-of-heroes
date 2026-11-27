@@ -68,7 +68,7 @@ function nextTransferTime(?string $lastTransferAt): ?DateTimeImmutable
 function transferHistory(PDO $database, int $accountId): array
 {
     $query = $database->prepare(
-        'SELECT t.cost, t.transferred_at, source.code AS source_code, target.code AS target_code
+        'SELECT t.cost, t.transferred_at, t.mmr_before, t.mmr_after, source.code AS source_code, target.code AS target_code
          FROM transfers t
          JOIN regions source ON source.id = t.source_region_id
          JOIN regions target ON target.id = t.target_region_id

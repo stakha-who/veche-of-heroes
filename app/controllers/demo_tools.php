@@ -43,14 +43,19 @@ function demoResetSubmit(): void
     }
 }
 
-function demoCooldownSubmit(): void
+function demoTimeSubmit(): void
 {
     $account = demoAccountFromPost();
     if ($account === null) {
         return;
     }
-    skipDemoCooldown(db(), (int) $account['id'], (int) $account['owner_id']);
-    $_SESSION['account_action'] = ['account_id' => (int) $account['id'], 'text' => 'Ожидание переноса пропущено.'];
+    try {
+        advanceDemoTime(db(), (int) $account['owner_id'], new DateTimeImmutable());
+        $message = 'Демовремя переведено на 90 дней вперёд для всех твоих аккаунтов.';
+    } catch (DomainException $exception) {
+        $message = $exception->getMessage();
+    }
+    $_SESSION['account_action'] = ['account_id' => (int) $account['id'], 'text' => $message];
     redirect('/account?id=' . $account['id']);
 }
 

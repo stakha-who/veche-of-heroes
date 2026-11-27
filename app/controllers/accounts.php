@@ -31,7 +31,8 @@ function accountPage(): void
         $notice = $action;
     }
     $database = db();
-    $season = activeSeason($database, new DateTimeImmutable());
+    $now = gameTime($database, (int) $account['owner_id']);
+    $season = activeSeason($database, $now);
     $ranking = $season === null ? null : openRanking(
         $database, (int) $account['id'], (int) $season['id'], (int) $account['current_region_id']
     );
@@ -44,6 +45,7 @@ function accountPage(): void
         'notice' => $notice['text'] ?? null,
         'items' => accountItems($database, (int) $account['id']),
         'season' => $season,
+        'now' => $now,
         'ranking' => $ranking,
         'olderRank' => $olderRank,
         'ranks' => rankingHistory($database, (int) $account['id']),

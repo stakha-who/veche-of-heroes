@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../app/database.php';
 require __DIR__ . '/../app/models/seasons.php';
+require __DIR__ . '/../app/models/game_clock.php';
 require __DIR__ . '/../app/models/rankings.php';
 
 if (getenv('APP_DEMO') !== '1') {
@@ -13,7 +14,7 @@ if (getenv('APP_DEMO') !== '1') {
 $database = connectDatabase();
 $name = $argv[1] ?? 'Яромир';
 $query = $database->prepare(
-    'SELECT a.id, a.player_name, a.level, a.gold, a.mmr, a.current_region_id, r.code AS region
+    'SELECT a.id, a.player_name, a.level, a.gold, a.mmr, a.owner_id, a.current_region_id, r.code AS region
      FROM accounts a JOIN regions r ON r.id = a.current_region_id WHERE a.player_name = ?'
 );
 $query->execute([$name]);
@@ -22,7 +23,8 @@ if (!$account) {
     fwrite(STDERR, "Игровой аккаунт не найден.\n");
     exit(1);
 }
-$season = activeSeason($database, new DateTimeImmutable());
+$now = gameTime($database, (int) $account['owner_id']);
+$season = activeSeason($database, $now);
 $ranking = $season === null ? null : openRanking(
     $database, (int) $account['id'], (int) $season['id'], (int) $account['current_region_id']
 );

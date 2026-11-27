@@ -6,6 +6,9 @@
     <dt>Регион</dt><dd><?= e($account['region_name']) ?> (<?= e($account['region_code']) ?>)</dd>
     <dt>Уровень</dt><dd><?= e($account['level']) ?></dd>
     <dt>Кошелёк</dt><dd><?= e($account['gold']) ?> золотых</dd>
+    <?php if (getenv('APP_DEMO') === '1'): ?>
+        <dt>Скрытый рейтинг (MMR, демо)</dt><dd><?= e($account['mmr']) ?></dd>
+    <?php endif; ?>
 </dl>
 <?php if (getenv('APP_DEMO') === '1'): ?>
 <form action="/account/demo/gold" method="post">
@@ -13,19 +16,28 @@
     <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
     <button type="submit">Добавить <?= e(TRANSFER_PRICE) ?> золотых</button>
 </form>
-    <?php if (nextTransferTime($account['last_transfer_at']) > new DateTimeImmutable()): ?>
-        <form action="/account/demo/cooldown" method="post">
-            <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
-            <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
-            <button type="submit">Пропустить 90 восходов солнца</button>
-        </form>
-    <?php endif; ?>
+    <p>Демовремя кабинета — <time datetime="<?= e($now->format(DATE_ATOM)) ?>"><?= e($now->format('d.m.Y H:i')) ?> UTC</time></p>
+    <form action="/account/demo/time" method="post">
+        <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
+        <input type="hidden" name="account_id" value="<?= e($account['id']) ?>">
+        <button type="submit">Пропустить 90 восходов солнца</button>
+    </form>
 <?php endif; ?>
 
 <section>
     <h2>Рейтинг</h2>
+
     <?php if ($season !== null): ?>
+        <?php
+        $seasonEnd = new DateTimeImmutable($season['ends_at'], new DateTimeZone('UTC'));
+        $seasonChange = match ($seasonEnd->format('m-d')) {
+            '01-01' => '1 января ' . $seasonEnd->format('Y'),
+            '07-01' => '1 июля ' . $seasonEnd->format('Y'),
+            default => $seasonEnd->format('d.m.Y'),
+        };
+        ?>
         <p><?= e($season['name']) ?></p>
+        <p>Смена сезона — <?= e($seasonChange) ?>, <?= e($seasonEnd->format('H:i')) ?> UTC.</p>
         <?php if (($ranking['confirmed_rank'] ?? null) !== null): ?>
             <p><strong><?= e($ranking['confirmed_rank']) ?></strong> · <?= e($ranking['rank_points']) ?> из <?= e(POINTS_PER_RANK) ?> очков ранга</p>
         <?php else: ?>

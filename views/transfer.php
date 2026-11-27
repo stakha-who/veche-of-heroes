@@ -29,7 +29,7 @@
             <p>Предварительный ранг — <?= e($provisionalRank) ?>.</p>
         <?php endif; ?>
         <p>Интервал между переносами — 90 восходов солнца.</p>
-        <?php if ($quote['next_at'] !== null && $quote['next_at'] > new DateTimeImmutable()): ?>
+        <?php if ($quote['next_at'] !== null && $quote['next_at'] > $now): ?>
             <p>Следующая попытка доступна с <?= e($quote['next_at']->format('d.m.Y H:i:s')) ?> UTC.</p>
         <?php endif; ?>
         <?php if ($quote['source']['code'] === 'KR' && $quote['target'] !== null && $quote['target']['code'] !== 'KR'): ?>

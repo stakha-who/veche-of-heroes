@@ -13,13 +13,6 @@ function addDemoGold(PDO $database, int $accountId, int $ownerId): void
     }
 }
 
-function skipDemoCooldown(PDO $database, int $accountId, int $ownerId): void
-{
-    $query = $database->prepare(
-        'UPDATE accounts SET last_transfer_at = NULL WHERE id = ? AND owner_id = ? AND deleted_at IS NULL'
-    );
-    $query->execute([$accountId, $ownerId]);
-}
 
 function addRandomDemoItem(PDO $database, int $accountId, int $ownerId): string
 {

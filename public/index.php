@@ -27,6 +27,7 @@ require __DIR__ . '/../app/models/accounts.php';
 require __DIR__ . '/../app/controllers/accounts.php';
 require __DIR__ . '/../app/models/transfers.php';
 require __DIR__ . '/../app/models/seasons.php';
+require __DIR__ . '/../app/models/game_clock.php';
 require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/transfer_service.php';
 require __DIR__ . '/../app/controllers/transfers.php';
@@ -47,7 +48,7 @@ $routes = [
     'GET /account/new' => 'accountCreatePage',
     'POST /account/new' => 'accountCreateSubmit',
     'POST /account/demo/gold' => 'demoGoldSubmit',
-    'POST /account/demo/cooldown' => 'demoCooldownSubmit',
+    'POST /account/demo/time' => 'demoTimeSubmit',
     'POST /account/demo/item/add' => 'demoItemAddSubmit',
     'POST /account/demo/item/remove' => 'demoItemRemoveSubmit',
     'POST /account/delete' => 'accountDeleteSubmit',

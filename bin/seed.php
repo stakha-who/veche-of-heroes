@@ -4,6 +4,7 @@ declare(strict_types=1);
 require __DIR__ . '/../app/database.php';
 require __DIR__ . '/../app/models/rankings.php';
 require __DIR__ . '/../app/models/seasons.php';
+require __DIR__ . '/../app/models/game_clock.php';
 require __DIR__ . '/../app/models/demo_fixtures.php';
 
 if (getenv('APP_DEMO') !== '1') {
@@ -79,7 +80,7 @@ foreach ($userIds as $username => $ownerId) {
     foreach (demoAccountFixtures($username) as $fixture) {
         $existing->execute([$fixture[0]]);
         if ($existing->fetchColumn() === false) {
-            addDemoAccount($database, $ownerId, $fixture, $regionIds, $now);
+            addDemoAccount($database, $ownerId, $fixture, $regionIds, gameTime($database, $ownerId, $now));
         }
     }
 }

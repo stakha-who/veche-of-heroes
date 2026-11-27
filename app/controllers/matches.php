@@ -13,7 +13,7 @@ function matchStart(): void
         return;
     }
     try {
-        $match = assignMatch(db(), (int) $account['id'], $ownerId, new DateTimeImmutable());
+        $match = assignMatch(db(), (int) $account['id'], $ownerId, gameTime(db(), $ownerId));
         redirect('/match?id=' . $account['id'] . '&game=' . $match['id']);
     } catch (DomainException $exception) {
         render('message', ['pageTitle' => 'Матч недоступен', 'message' => $exception->getMessage()], 422);
@@ -50,7 +50,7 @@ function demoMatchSubmit(): void
     $outcome = postValue('outcome');
     try {
         $result = demoResult(db(), $account, $matchId, $outcome);
-        finishMatch(db(), (int) $account['id'], $ownerId, $matchId, $result, new DateTimeImmutable());
+        finishMatch(db(), (int) $account['id'], $ownerId, $matchId, $result, gameTime(db(), $ownerId));
         redirect('/match?id=' . $account['id'] . '&game=' . $matchId);
     } catch (DomainException $exception) {
         render('message', ['pageTitle' => 'Результат отклонён', 'message' => $exception->getMessage()], 422);

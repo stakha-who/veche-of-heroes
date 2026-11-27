@@ -108,6 +108,8 @@ function resetDemoAccounts(PDO $database, int $ownerId, DateTimeImmutable $now):
         foreach ($remaining as $id) {
             $deleteAccount->execute([$id, $ownerId]);
         }
+        $clearDemoTime = $database->prepare('UPDATE users SET demo_days_elapsed = 0 WHERE id = ?');
+        $clearDemoTime->execute([$ownerId]);
         $database->commit();
     } catch (Throwable $exception) {
         if ($database->inTransaction()) {
