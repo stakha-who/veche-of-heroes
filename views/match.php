@@ -1,7 +1,7 @@
 <h1>Матч №<?= e($match['account_number']) ?></h1>
 <p><?= e($account['player_name']) ?> · <?= e($match['server_name']) ?> (<?= e($match['region_code']) ?>)</p>
 <?php if ($match['outcome'] !== null): ?>
-    <p role="status">Результат принят — <?= $match['outcome'] === 'win' ? 'победа' : 'поражение' ?>.</p>
+    <p class="notice" role="status">Результат принят — <?= $match['outcome'] === 'win' ? 'победа' : 'поражение' ?>.</p>
 <?php elseif (getenv('APP_DEMO') === '1'): ?>
     <form action="/match/demo" method="post">
         <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">

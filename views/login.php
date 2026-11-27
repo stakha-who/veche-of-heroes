@@ -1,6 +1,6 @@
 <h1>Вход в кабинет</h1>
 <?php if (isset($message)): ?>
-    <p role="alert"><?= e($message) ?></p>
+    <p class="notice notice--error" role="alert"><?= e($message) ?></p>
 <?php endif; ?>
 <form action="/login" method="post">
     <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">

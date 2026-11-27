@@ -1,6 +1,6 @@
 <h1>Создать аккаунт</h1>
 <?php if ($message !== ''): ?>
-    <p role="alert"><?= e($message) ?></p>
+    <p class="notice notice--error" role="alert"><?= e($message) ?></p>
 <?php endif; ?>
 <form action="/account/new" method="post">
     <input type="hidden" name="csrf" value="<?= e(csrfToken()) ?>">
